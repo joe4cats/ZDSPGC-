@@ -78,7 +78,6 @@ $records   = Attendance::listRecords(['event_id' => $id], 500);
 $breakdown = Attendance::courseBreakdown($id);
 $absent    = Attendance::absenteeCount($id);
 $posterUrl = Attendance::checkinUrl($event);
-$posterQr  = Attendance::eventToken($event);
 
 $PAGE_TITLE  = (string) $event['title'];
 $PAGE_ACTIVE = 'events';
@@ -150,7 +149,7 @@ require __DIR__ . '/includes/layout/header.php';
   <div class="card">
     <h3><?= icon('qr') ?> Poster &amp; self check-in link</h3>
     <div class="row" style="align-items:flex-start; gap:20px;">
-      <div class="qr card-qr" data-qr="<?= Helpers::e($posterQr) ?>"
+      <div class="qr card-qr" data-qr="<?= Helpers::e($posterUrl) ?>"
            data-qr-name="poster-<?= Helpers::e((string) $event['code']) ?>"
            data-qr-label="<?= Helpers::e((string) $event['title']) ?>" data-qr-cell="5">
         <div class="qr-tools">

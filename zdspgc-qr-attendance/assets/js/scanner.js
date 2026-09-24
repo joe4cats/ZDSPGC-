@@ -21,8 +21,9 @@
     csrf: "",
     endpoint: "",
     scanning: false,
-    lastPayload: "",
-    lastAt: 0,
+    busy: false,
+    queue: [],
+    recent: {},
     sound: true
   };
 
@@ -189,29 +190,49 @@
   /* ---------------- decode handling ---------------- */
 
   var DEDUPE_MS = 2500;
+  var MAX_QUEUE = 20;
+
+  /** Per-text dedupe: a QR stays blocked for DEDUPE_MS even when other
+      codes are decoded in between (so alternating frames cannot flood). */
+  function markRecent(text, now) {
+    Object.keys(state.recent).forEach(function (key) {
+      if (now - state.recent[key] >= DEDUPE_MS) { delete state.recent[key]; }
+    });
+    if (Object.prototype.hasOwnProperty.call(state.recent, text)) { return false; }
+    state.recent[text] = now;
+    return true;
+  }
+
+  /** One in-flight request at a time; everything else waits in the queue
+      so no scan is lost while the server is busy. */
+  function enqueue(payload) {
+    if (state.queue.length >= MAX_QUEUE) { return; }
+    state.queue.push(payload);
+    pumpQueue();
+  }
+
+  function pumpQueue() {
+    if (state.busy || !state.queue.length) { return; }
+    state.busy = true;
+    var payload = state.queue.shift();
+    submit(payload).then(renderResult).catch(function () {
+      renderResult({ ok: false, code: "network", message: "Cannot reach the server. Check the connection." });
+    }).then(function () {
+      state.busy = false;
+      pumpQueue();
+    });
+  }
 
   function handleDecoded(text) {
     text = String(text || "").trim();
-    var now = Date.now();
-    if (text === "" || state.busy) { return; }
-    if (text === state.lastPayload && (now - state.lastAt) < DEDUPE_MS) { return; }
-    state.lastPayload = text;
-    state.lastAt = now;
-
-    state.busy = true;
-    submit({
+    if (text === "" || !markRecent(text, Date.now())) { return; }
+    enqueue({
       token: text,
       event_id: state.eventId,
       method: "qr",
       source: state.mode === "self" ? "self" : "station",
       station: currentStation()
-    }).then(renderResult).catch(function () {
-      renderResult({ ok: false, code: "network", message: "Cannot reach the server. Check the connection." });
-    }).then(function () { state.busy = false; });
-  }
-
-  function networkFail() {
-    renderResult({ ok: false, code: "network", message: "Cannot reach the server. Check the connection." });
+    });
   }
 
   /* ---------------- manual entry (USB scanners type + Enter) ---------------- */
@@ -224,21 +245,20 @@
       var input = $("manual-input");
       if (!input) { return; }
       var value = String(input.value || "").trim();
-      if (value === "" || state.busy) { return; }
+      if (value === "") { return; }
 
       var looksLikeToken = value.indexOf(".") !== -1 && value.length > 20;
-      state.busy = true;
-      submit({
+      // Consume the input immediately: USB scanners type the next token right
+      // away, and queueing must never leave stale text in the box.
+      input.value = "";
+      input.focus();
+      enqueue({
         token: looksLikeToken ? value : "",
         student_no: looksLikeToken ? "" : value,
         event_id: state.eventId,
         method: looksLikeToken ? "qr" : "manual",
         source: "station",
         station: currentStation()
-      }).then(renderResult).catch(networkFail).then(function () {
-        state.busy = false;
-        input.value = "";
-        input.focus();
       });
     });
   }

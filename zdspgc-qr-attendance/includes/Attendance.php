@@ -39,7 +39,9 @@ final class Attendance
             'event' => (string) $event['code'],
             'k'     => self::eventToken($event),
         ]);
-        $base = PUBLIC_BASE_URL !== '' ? rtrim(PUBLIC_BASE_URL, '/') : Helpers::url('');
+        $base = PUBLIC_BASE_URL !== ''
+            ? rtrim(PUBLIC_BASE_URL, '/')
+            : rtrim(Helpers::url(''), '/');
         return $base . '/checkin.php?' . $query;
     }
 

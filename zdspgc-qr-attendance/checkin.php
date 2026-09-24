@@ -17,10 +17,14 @@ $event = null;
 
 if ($code !== '') {
     $event = Attendance::eventByCode($code);
-    // The link must carry a valid signed token for that event.
-    if ($event !== null && Attendance::resolveEventByToken($key) === null) {
-        $event   = null;
-        $badLink = true;
+    // The link must carry a valid signed token for that event — a token
+    // signed for a different event must not unlock this page either.
+    if ($event !== null) {
+        $tokenEvent = Attendance::resolveEventByToken($key);
+        if ($tokenEvent === null || (int) $tokenEvent['id'] !== (int) $event['id']) {
+            $event   = null;
+            $badLink = true;
+        }
     }
 }
 

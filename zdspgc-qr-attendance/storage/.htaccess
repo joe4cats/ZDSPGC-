@@ -1,0 +1,9 @@
+# Keep everything in this folder private (SQLite database lives here).
+# Apache 2.4
+Require all denied
+
+# Apache 2.2
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>

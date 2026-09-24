@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Dimataling, Zamboanga del Sur landscape">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7cc3e0"/>
+      <stop offset=".55" stop-color="#c9e6dc"/>
+      <stop offset="1" stop-color="#fbe3b8"/>
+    </linearGradient>
+    <linearGradient id="bay" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#59b6d3"/>
+      <stop offset="1" stop-color="#2e88ab"/>
+    </linearGradient>
+    <linearGradient id="paddy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#57b26f"/>
+      <stop offset="1" stop-color="#1e7a47"/>
+    </linearGradient>
+  </defs>
+
+  <!-- dawn sky over Illana Bay -->
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1210" cy="205" r="120" fill="#ffe7b3" opacity=".35"/>
+  <circle cx="1210" cy="205" r="78" fill="#ffd98a" opacity=".9"/>
+  <g fill="#ffffff" opacity=".8">
+    <ellipse cx="330" cy="150" rx="130" ry="34"/>
+    <ellipse cx="430" cy="130" rx="90" ry="28"/>
+    <ellipse cx="900" cy="110" rx="110" ry="26"/>
+    <ellipse cx="1420" cy="330" rx="120" ry="28"/>
+  </g>
+
+  <!-- mountain ranges behind the town -->
+  <path d="M0,470 L180,360 L340,455 L520,330 L700,450 L880,370 L1060,465 L1240,355 L1420,455 L1600,380 L1600,560 L0,560 Z" fill="#7fc3a4" opacity=".85"/>
+  <path d="M0,540 L220,430 L430,530 L640,420 L860,540 L1120,440 L1360,545 L1600,470 L1600,640 L0,640 Z" fill="#3f9e75"/>
+
+  <!-- the bay -->
+  <rect y="600" width="1600" height="150" fill="url(#bay)"/>
+  <g stroke="#ffffff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round">
+    <line x1="180" y1="640" x2="330" y2="640"/>
+    <line x1="520" y1="672" x2="700" y2="672"/>
+    <line x1="940" y1="646" x2="1120" y2="646"/>
+    <line x1="1260" y1="690" x2="1440" y2="690"/>
+    <line x1="360" y1="710" x2="520" y2="710"/>
+  </g>
+  <path d="M0,742 C260,720 520,760 800,738 C1080,716 1340,756 1600,734 L1600,780 L0,780 Z" fill="#e7d7a8"/>
+
+  <!-- rice paddies -->
+  <rect y="760" width="1600" height="140" fill="url(#paddy)"/>
+  <g fill="none" stroke="#8fd9a4" stroke-opacity=".55" stroke-width="4">
+    <path d="M-40,820 C300,795 700,845 1640,805"/>
+    <path d="M-40,862 C360,840 780,885 1640,850"/>
+  </g>
+  <g stroke="#14523a" stroke-opacity=".65" stroke-width="5">
+    <line x1="300" y1="760" x2="260" y2="900"/>
+    <line x1="820" y1="760" x2="850" y2="900"/>
+    <line x1="1300" y1="760" x2="1350" y2="900"/>
+  </g>
+
+  <!-- coconut palms -->
+  <g fill="#0f4a33">
+    <path d="M120,900 C126,820 130,770 136,720 L152,720 C148,772 144,822 142,900 Z"/>
+    <path d="M144,716 C100,690 60,690 30,712 C66,704 104,712 140,730 Z"/>
+    <path d="M144,716 C188,686 232,686 264,708 C226,700 186,710 148,730 Z"/>
+    <path d="M144,714 C122,672 96,650 62,642 C92,660 116,686 136,726 Z"/>
+    <path d="M144,714 C168,674 196,654 232,648 C200,664 176,690 152,726 Z"/>
+    <path d="M144,718 C140,678 142,648 150,620 C152,652 152,684 152,722 Z"/>
+    <path d="M1470,900 C1464,830 1462,780 1458,732 L1474,732 C1478,782 1480,832 1484,900 Z"/>
+    <path d="M1464,728 C1420,704 1382,704 1352,726 C1388,716 1424,724 1460,742 Z"/>
+    <path d="M1464,728 C1506,700 1548,700 1578,722 C1542,712 1504,722 1468,742 Z"/>
+    <path d="M1464,726 C1444,686 1420,666 1388,658 C1416,674 1438,700 1456,738 Z"/>
+    <path d="M1464,726 C1486,688 1512,668 1546,662 C1516,678 1494,702 1474,738 Z"/>
+    <path d="M1464,730 C1460,692 1462,664 1470,638 C1472,668 1472,698 1474,734 Z"/>
+  </g>
+</svg>

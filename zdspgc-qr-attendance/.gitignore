@@ -1,0 +1,25 @@
+# Local runtime data — never commit attendance databases or server logs
+storage/*.sqlite
+storage/*.sqlite-*
+storage/*.db
+storage/*.log
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+
+# IDE / OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+*.swp

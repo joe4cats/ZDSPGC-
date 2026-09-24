@@ -1,0 +1,39 @@
+# =============================================================================
+#  ZDSPGC Event QR Attendance System — Apache configuration
+#  Only needed when you serve the app with Apache (XAMPP/WAMP/cPanel).
+# =============================================================================
+
+# Cleaner URLs are not required — every page is a real .php file.
+
+# ---- Never serve the database file or the internals of includes/ ----
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Block direct access to the SQLite database and any backup copies
+  RewriteRule ^storage/ - [F,L]
+
+  # Block direct access to the class files (they are only loaded by PHP)
+  RewriteRule ^includes/ - [F,L]
+
+  # Block hidden folders such as .git
+  RewriteRule (^|/)\.(?!well-known) - [F,L]
+</IfModule>
+
+# ---- Fallback for hosts without mod_rewrite ----
+<FilesMatch "\.(sqlite|sqlite3|db|sql|md)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ---- Sensible defaults ----
+DirectoryIndex index.php index.html
+Options -Indexes
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json
+</IfModule>

@@ -31,6 +31,9 @@ $openEvents = array_values(array_filter(
 ));
 
 $state = $event !== null ? Attendance::windowState($event) : ['state' => 'none', 'message' => ''];
+$selfCounters = $event !== null
+    ? Attendance::counters((int) $event['id'])
+    : ['total' => 0, 'on_time' => 0, 'late' => 0];
 
 $PAGE_TITLE = 'Self check-in';
 $PAGE_BARE  = true;
@@ -39,10 +42,14 @@ $EXTRA_JS   = ['vendor/html5-qrcode.min.js', 'scanner.js'];
 require __DIR__ . '/includes/layout/header.php';
 ?>
 
-<div class="row between mb">
-  <div>
-    <h1 style="color:#eaf3ee;"><?= icon('qr') ?> Student self check-in</h1>
-    <p class="small" style="color:#9db8aa;"><?= Helpers::e(SCHOOL_NAME) ?> · <?= Helpers::e(Helpers::fmtDateTime(Helpers::now())) ?></p>
+<div class="station-hero mb">
+  <div class="station-hero-copy">
+    <span class="station-eyebrow"><?= icon('qr') ?><span>Student self check-in</span></span>
+    <h1>Student self check-in</h1>
+    <p class="station-meta">
+      <strong><?= Helpers::e(SCHOOL_NAME) ?></strong>
+      <span><?= Helpers::e(Helpers::fmtDateTime(Helpers::now())) ?></span>
+    </p>
   </div>
 </div>
 
@@ -78,22 +85,68 @@ require __DIR__ . '/includes/layout/header.php';
 <?php else: ?>
 
   <div class="station-grid">
-    <div class="card">
-      <h3><?= icon('camera') ?> Step 2 — scan your student ID</h3>
-      <p class="small muted">Tap <strong>Start camera</strong>, allow camera access, then point your phone at the QR code on your student ID card or digital ID.</p>
-      <div class="row mb">
-        <button id="camera-start" type="button"><?= icon('camera') ?><span>Start camera</span></button>
-        <button id="camera-stop" class="ghost" type="button"><?= icon('x-circle') ?><span>Stop</span></button>
-        <button id="toggle-sound" class="ghost" type="button"><?= icon('bell') ?><span>Sound on</span></button>
+    <section class="card station-card scan-camera" aria-labelledby="self-camera-title">
+      <div class="station-card-head">
+        <div class="station-title">
+          <span class="station-icon" aria-hidden="true"><?= icon('camera') ?></span>
+          <div>
+            <h3 id="self-camera-title">Step 2 — scan your student ID</h3>
+            <p class="station-card-sub">Tap <strong>Start camera</strong>, allow camera access, then point your phone at the QR code on your student ID card or digital ID.</p>
+          </div>
+        </div>
+        <span class="camera-pill idle" id="camera-state"><span class="dot" aria-hidden="true"></span><span id="camera-state-label">Camera idle</span></span>
       </div>
-      <div id="reader"></div>
-      <p class="small muted mt">Camera not working? Ask the officer at the station to scan your ID instead.</p>
-    </div>
+      <div class="camera-controls mb">
+        <button id="camera-start" class="primary" type="button" aria-describedby="camera-state-label"><?= icon('camera') ?><span>Start camera</span></button>
+        <button id="camera-stop" class="ghost" type="button" disabled><?= icon('x-circle') ?><span>Stop</span></button>
+        <button id="toggle-sound" class="ghost" type="button" aria-pressed="true"><?= icon('bell') ?><span>Sound on</span></button>
+      </div>
+      <div id="reader" class="scanner-view"
+        data-scanner-mode="self"
+        data-scanner-event-id="<?= (int) $event['id'] ?>"
+        data-scanner-endpoint="<?= Helpers::e(Helpers::url('api/checkin.php')) ?>"
+        data-scanner-stats-url="<?= Helpers::e(Helpers::url('api/stats.php')) ?>"
+        data-scanner-csrf="<?= Helpers::e(Security::csrfToken()) ?>"
+        data-scanner-sound="true"
+        data-scanner-autostart="false"
+      ></div>
+      <p class="small muted mt">Ask the officer at the station to scan your ID if the camera won't work.</p>
+    </section>
 
-    <div>
-      <?php $selfCounters = Attendance::counters((int) $event['id']); ?>
-      <div class="card">
-        <h3><?= icon('calendar') ?> <?= Helpers::e((string) $event['title']) ?></h3>
+    <div class="station-side">
+      <section class="card station-card scan-result" aria-labelledby="self-result-title">
+        <div class="station-card-head">
+          <div class="station-title">
+            <span class="station-icon alt" aria-hidden="true"><?= icon('bell') ?></span>
+            <div>
+              <h3 id="self-result-title">Your result</h3>
+              <p class="station-card-sub">The latest scan result appears here.</p>
+            </div>
+          </div>
+        </div>
+        <div class="verdict" id="verdict" aria-live="polite">
+          <div class="stamp">Ready</div>
+          <div class="meta"><?= Helpers::e($state['message']) ?></div>
+        </div>
+
+        <div class="stat-grid compact mt">
+          <div class="stat"><div class="num" id="count-total"><?= (int) $selfCounters['total'] ?></div><div class="lbl">Checked in</div></div>
+          <div class="stat"><div class="num" id="count-on-time"><?= (int) $selfCounters['on_time'] ?></div><div class="lbl">On time</div></div>
+          <div class="stat red"><div class="num" id="count-late"><?= (int) $selfCounters['late'] ?></div><div class="lbl">Late</div></div>
+        </div>
+        <p class="scan-refresh small muted mt">Keep this page open until you see your name and the confirmation stamp.</p>
+      </section>
+
+      <section class="card station-card scan-log-card mt" aria-labelledby="self-event-title">
+        <div class="station-card-head">
+          <div class="station-title">
+            <span class="station-icon" aria-hidden="true"><?= icon('calendar') ?></span>
+            <div>
+              <h3 id="self-event-title"><?= Helpers::e((string) $event['title']) ?></h3>
+              <p class="station-card-sub">Event details for your reference.</p>
+            </div>
+          </div>
+        </div>
         <table class="tbl">
           <tbody>
             <tr><td>Code</td><td class="mono"><?= Helpers::e((string) $event['code']) ?></td></tr>
@@ -103,21 +156,7 @@ require __DIR__ . '/includes/layout/header.php';
               <span class="small muted">(grace <?= (int) $event['grace_minutes'] ?> min)</span></td></tr>
           </tbody>
         </table>
-      </div>
-
-      <div class="card mt">
-        <h3><?= icon('bell') ?> Your result</h3>
-        <div class="verdict" id="verdict">
-          <div class="stamp">Ready</div>
-          <div class="meta"><?= Helpers::e($state['message']) ?></div>
-        </div>
-        <div class="stat-grid mt">
-          <div class="stat"><div class="num" id="count-total"><?= (int) $selfCounters['total'] ?></div><div class="lbl">Checked in</div></div>
-          <div class="stat"><div class="num" id="count-on-time"><?= (int) $selfCounters['on_time'] ?></div><div class="lbl">On time</div></div>
-          <div class="stat red"><div class="num" id="count-late"><?= (int) $selfCounters['late'] ?></div><div class="lbl">Late</div></div>
-        </div>
-        <p class="small muted mt">Keep this page open until you see your name and the confirmation stamp.</p>
-      </div>
+      </section>
     </div>
   </div>
 
@@ -128,17 +167,6 @@ require __DIR__ . '/includes/layout/header.php';
       Never share a photo of your QR ID — anyone holding it could check in as you.</p>
   </div>
 
-<script>
-  ZDSPGCScanner.boot({
-    mode: "self",
-    eventId: <?= (int) $event['id'] ?>,
-    endpoint: <?= json_encode(Helpers::url('api/checkin.php')) ?>,
-    statsUrl: <?= json_encode(Helpers::url('api/stats.php')) ?>,
-    csrf: <?= json_encode(Security::csrfToken()) ?>,
-    sound: true,
-    autostart: false
-  });
-</script>
 <?php endif; ?>
 
 <?php require __DIR__ . '/includes/layout/footer.php'; ?>

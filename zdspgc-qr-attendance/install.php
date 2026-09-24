@@ -106,9 +106,9 @@ $flashes = Helpers::takeFlashes();
             <tr><td>PHP version</td><td><?= Helpers::e((string) ($probe['php'] ?? PHP_VERSION)) ?></td></tr>
             <tr><td>SQLite support</td><td><?= !empty($probe['sqlite']) ? '<span class="badge">available</span>' : '<span class="badge red">missing</span>' ?></td></tr>
             <tr><td>mbstring</td><td><?= !empty($probe['mbstring']) ? '<span class="badge">available</span>' : '<span class="badge red">missing</span>' ?></td></tr>
-            <tr><td>QR signing secret</td><td><?= !empty($probe['secret_ok']) ? '<span class="badge">changed</span>' : '<span class="badge gold">still the default — change APP_SECRET</span>' ?></td></tr>
+            <tr><td>QR signing secret</td><td><?= !empty($probe['secret_ok']) ? '<span class="badge">changed</span>' : '<span class="badge red">still the default — change APP_SECRET</span>' ?></td></tr>
             <tr><td>Signed token self-test</td><td><?= !empty($probe['token']) ? '<span class="badge">passes</span>' : '<span class="badge red">fails</span>' ?></td></tr>
-            <tr><td>Writable storage folder</td><td><?= !empty($probe['storage']) ? '<span class="badge">yes</span>' : '<span class="badge gold">no (needed for SQLite)</span>' ?></td></tr>
+            <tr><td>Writable storage folder</td><td><?= !empty($probe['storage']) ? '<span class="badge">yes</span>' : '<span class="badge red">no (needed for SQLite)</span>' ?></td></tr>
           </tbody>
         </table>
       </div>

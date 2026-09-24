@@ -174,7 +174,29 @@ final class Security
 
     public static function ip(): string
     {
-        return (string) ($_SERVER['REMOTE_ADDR'] ?? 'cli');
+        $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+        if ($ip === '') {
+            return 'cli';
+        }
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            return 'unknown';
+        }
+        // Only honour forwarded headers when the direct peer is a proxy we
+        // explicitly trust (see TRUSTED_PROXIES in config.php). Never trust
+        // X-Forwarded-For from an untrusted client — it is trivially forged.
+        $trusted = TRUSTED_PROXIES;
+        if ($trusted !== [] && in_array($ip, $trusted, true)) {
+            $forwarded = (string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? '');
+            if ($forwarded !== '') {
+                foreach (explode(',', $forwarded) as $candidate) {
+                    $candidate = trim($candidate);
+                    if (filter_var($candidate, FILTER_VALIDATE_IP) !== false) {
+                        return $candidate;
+                    }
+                }
+            }
+        }
+        return $ip;
     }
 
     public static function userAgent(): string

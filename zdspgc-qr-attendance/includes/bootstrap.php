@@ -67,6 +67,8 @@ if (!Schema::isInstalled() && !defined('ZDSPGC_SKIP_INSTALL_CHECK')) {
     if (Helpers::currentPage() !== 'install.php') {
         Helpers::redirect('install.php');
     }
+} else {
+    Schema::ensureColumns();
 }
 
 /* -------------------------------------------------------------------------

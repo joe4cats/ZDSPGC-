@@ -82,7 +82,7 @@ require __DIR__ . '/includes/layout/header.php';
     <div class="stat-grid mt">
       <div class="stat"><div class="num"><?= $visits ?></div><div class="lbl">Events attended</div></div>
       <div class="stat red"><div class="num"><?= $late ?></div><div class="lbl">Late arrivals</div></div>
-      <div class="stat gold"><div class="num"><?= Helpers::percent($visits - $late, max(1, $visits)) ?>%</div><div class="lbl">Punctuality</div></div>
+      <div class="stat"><div class="num"><?= Helpers::percent($visits - $late, max(1, $visits)) ?>%</div><div class="lbl">Punctuality</div></div>
     </div>
 
     <div class="row mt">
@@ -103,7 +103,7 @@ require __DIR__ . '/includes/layout/header.php';
     <h3><?= icon('qr') ?> QR ID (signed)</h3>
     <div class="id-card">
       <div class="id-qr">
-        <div class="qr card-qr" data-qr="<?= Helpers::e($token) ?>"
+        <div id="student-qr" class="qr card-qr" data-print-qr data-qr="<?= Helpers::e($token) ?>"
              data-qr-name="qr-id-<?= Helpers::e((string) $student['student_no']) ?>"
              data-qr-label="<?= Helpers::e((string) $student['full_name']) ?>" data-qr-cell="4">
         </div>
@@ -119,8 +119,8 @@ require __DIR__ . '/includes/layout/header.php';
     </div>
 
     <div class="qr-tools mt no-print">
-      <button class="sm ghost" type="button" onclick="ZDSPGCQr.print(this)"><?= icon('print') ?><span>Print QR</span></button>
-      <button class="sm ghost" type="button" onclick="ZDSPGCQr.download(this)"><?= icon('download') ?><span>Save PNG</span></button>
+      <button class="sm ghost" type="button" data-print-qr-target="student-qr"><?= icon('print') ?><span>Print QR</span></button>
+      <button class="sm ghost" type="button" data-save-qr-target="student-qr"><?= icon('download') ?><span>Save PNG</span></button>
       <button class="sm ghost" type="button" data-copy="<?= Helpers::e($token) ?>"><?= icon('link') ?><span>Copy token</span></button>
     </div>
 
@@ -137,23 +137,23 @@ require __DIR__ . '/includes/layout/header.php';
     <p class="empty">This student has not been recorded in any event yet.</p>
   <?php else: ?>
     <div class="table-wrap">
-      <table class="tbl">
+      <table class="tbl responsive">
         <thead>
           <tr><th>When</th><th>Event</th><th>Venue</th><th>Status</th><th>Method</th><th>Recorded by</th></tr>
         </thead>
         <tbody>
         <?php foreach ($history as $row): ?>
           <tr>
-            <td class="nowrap"><?= Helpers::e(Helpers::fmtDateTime((string) $row['checked_in_at'])) ?></td>
-            <td><a href="<?= Helpers::e(Helpers::url('event.php', ['id' => (int) $row['event_id']])) ?>"><?= Helpers::e((string) $row['event_title']) ?></a><br>
+            <td class="nowrap" data-label="When"><?= Helpers::e(Helpers::fmtDateTime((string) $row['checked_in_at'])) ?></td>
+            <td data-label="Event"><a href="<?= Helpers::e(Helpers::url('event.php', ['id' => (int) $row['event_id']])) ?>"><?= Helpers::e((string) $row['event_title']) ?></a><br>
               <span class="small muted mono"><?= Helpers::e((string) $row['event_code']) ?></span></td>
-            <td class="small"><?= Helpers::e((string) $row['venue']) ?></td>
-            <td><?= (string) $row['status'] === Attendance::LATE
-                ? '<span class="badge gold">late</span>'
+            <td class="small" data-label="Venue"><?= Helpers::e((string) $row['venue']) ?></td>
+            <td data-label="Status"><?= (string) $row['status'] === Attendance::LATE
+                ? '<span class="badge red">late</span>'
                 : '<span class="badge">on time</span>' ?></td>
-            <td class="small"><?= Helpers::e(Attendance::methodLabel((string) $row['method'])) ?>
+            <td class="small" data-label="Method"><?= Helpers::e(Attendance::methodLabel((string) $row['method'])) ?>
               <br><span class="muted"><?= (string) $row['source'] === 'self' ? 'self check-in' : 'station' ?></span></td>
-            <td class="small"><?= Helpers::e((string) $row['scanned_by'] !== '' ? (string) $row['scanned_by'] : '—') ?></td>
+            <td class="small" data-label="Recorded by"><?= Helpers::e((string) $row['scanned_by'] !== '' ? (string) $row['scanned_by'] : '—') ?></td>
           </tr>
         <?php endforeach; ?>
         </tbody>

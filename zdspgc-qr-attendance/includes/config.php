@@ -14,7 +14,7 @@ declare(strict_types=1);
  * 1. Application identity
  * -------------------------------------------------------------------------- */
 const APP_NAME    = 'ZDSPGC Event QR Attendance';
-const APP_SHORT   = 'ZDSPGC QR Attendance';
+const APP_SHORT   = 'ZDSPGC Event QR Code Attendance System';
 const SCHOOL_NAME = 'Zamboanga del Sur Provincial Government College';
 const SCHOOL_CAMPUS = 'Dimataling, Zamboanga del Sur';
 const APP_VERSION = '1.0.0';
@@ -63,6 +63,14 @@ const SESSION_IDLE_MINUTES  = 60;   // auto-logout after inactivity
 const LOGIN_MAX_ATTEMPTS    = 5;    // failed logins before a short lockout
 const LOGIN_LOCKOUT_MINUTES = 5;
 const CHECKIN_RATE_PER_MIN  = 300;  // max check-in posts per minute per session
+
+/**
+ * Reverse proxies (load balancers) whose X-Forwarded-For header may be used
+ * to recover the real client IP. Empty = ignore forwarded headers entirely
+ * and always use REMOTE_ADDR. Example: ['10.0.0.5']
+ * @var list<string>
+ */
+const TRUSTED_PROXIES = [];
 
 /* -----------------------------------------------------------------------------
  * 4. Attendance rules

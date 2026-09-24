@@ -575,8 +575,8 @@ final class Attendance
             'events'        => (int) Database::scalar('SELECT COUNT(*) FROM events'),
             'open_events'   => (int) Database::scalar('SELECT COUNT(*) FROM events WHERE status = :s', ['s' => 'open']),
             'live_events'   => (int) Database::scalar(
-                'SELECT COUNT(*) FROM events WHERE status = :s AND starts_at <= :now AND ends_at >= :now',
-                ['s' => 'open', 'now' => Helpers::now()]
+                'SELECT COUNT(*) FROM events WHERE status = :status AND starts_at <= :starts_before AND ends_at >= :ends_after',
+                ['status' => 'open', 'starts_before' => Helpers::now(), 'ends_after' => Helpers::now()]
             ),
             'today_events'  => (int) Database::scalar(
                 'SELECT COUNT(*) FROM events WHERE starts_at >= :from AND starts_at <= :to',

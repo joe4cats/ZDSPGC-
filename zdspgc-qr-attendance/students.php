@@ -324,25 +324,25 @@ require __DIR__ . '/includes/layout/header.php';
     <p class="empty">No students match those filters.</p>
   <?php else: ?>
     <div class="table-wrap">
-      <table class="tbl">
+      <table class="tbl responsive">
         <thead>
           <tr><th>Student</th><th>Course</th><th class="num">Events attended</th><th>Last scan</th><th>Status</th><th class="right">Actions</th></tr>
         </thead>
         <tbody>
         <?php foreach ($students as $student): $sid = (int) $student['id']; ?>
           <tr>
-            <td>
+            <td data-label="Student">
               <a href="<?= Helpers::e(Helpers::url('student.php', ['id' => $sid])) ?>"><strong><?= Helpers::e((string) $student['full_name']) ?></strong></a><br>
               <span class="small muted mono"><?= Helpers::e((string) $student['student_no']) ?></span>
             </td>
-            <td class="small"><?= Helpers::e((string) $student['course']) ?><br>
+            <td class="small" data-label="Course"><?= Helpers::e((string) $student['course']) ?><br>
               <span class="muted"><?= Helpers::e((string) $student['year_level']) ?> <?= Helpers::e((string) $student['section']) ?></span></td>
-            <td class="num"><?= (int) $student['visits'] ?></td>
-            <td class="small"><?= Helpers::e($student['last_visit'] === null ? 'never' : Helpers::humanAgo((string) $student['last_visit'])) ?></td>
-            <td><?= (string) $student['status'] === 'active'
+            <td class="num" data-label="Events attended"><?= (int) $student['visits'] ?></td>
+            <td class="small" data-label="Last scan"><?= Helpers::e($student['last_visit'] === null ? 'never' : Helpers::humanAgo((string) $student['last_visit'])) ?></td>
+            <td data-label="Status"><?= (string) $student['status'] === 'active'
                 ? '<span class="badge">active</span>'
                 : '<span class="badge grey">inactive</span>' ?></td>
-            <td class="right nowrap">
+            <td class="right nowrap" data-label="Actions">
               <div class="link-actions" style="justify-content:flex-end;">
                 <a class="btn sm ghost" href="<?= Helpers::e(Helpers::url('student.php', ['id' => $sid])) ?>"><?= icon('qr') ?><span>QR ID</span></a>
                 <a class="btn sm ghost" href="<?= Helpers::e(Helpers::url('students.php', ['edit' => $sid])) ?>"><?= icon('edit') ?><span>Edit</span></a>

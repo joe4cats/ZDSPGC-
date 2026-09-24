@@ -71,7 +71,13 @@ function nav_item(string $key, string $href, string $label, string $iconName, st
     </nav>
 
     <div class="side-user">
-      <span class="avatar"><?= Helpers::e(mb_strtoupper(mb_substr(Auth::userName() ?? '?', 0, 1))) ?></span>
+      <?php $avatarInfo = Auth::avatarFile(); ?>
+      <span class="avatar">
+        <span aria-hidden="true"><?= Helpers::e(mb_strtoupper(mb_substr(Auth::userName() ?? '?', 0, 1))) ?></span>
+        <?php if ($avatarInfo !== null): ?>
+          <img class="avatar-img" src="<?= Helpers::e($avatarInfo[0]) ?>" alt="" onerror="this.remove()">
+        <?php endif; ?>
+      </span>
       <span class="user-meta">
         <strong><?= Helpers::e(Auth::userName() ?? 'Guest') ?></strong>
         <small><?= Helpers::e(Auth::roleLabel()) ?></small>

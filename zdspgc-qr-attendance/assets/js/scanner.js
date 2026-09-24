@@ -204,7 +204,7 @@
       event_id: state.eventId,
       method: "qr",
       source: state.mode === "self" ? "self" : "station",
-      station: state.station
+      station: currentStation()
     }).then(renderResult).catch(function () {
       renderResult({ ok: false, code: "network", message: "Cannot reach the server. Check the connection." });
     }).then(function () { state.busy = false; });
@@ -234,7 +234,7 @@
         event_id: state.eventId,
         method: looksLikeToken ? "qr" : "manual",
         source: "station",
-        station: state.station
+        station: currentStation()
       }).then(renderResult).catch(networkFail).then(function () {
         state.busy = false;
         input.value = "";
@@ -415,7 +415,11 @@
           var list = $("scan-log");
           if (list && list.children.length === 0 && data.recent && data.recent.length) {
             data.recent.slice().reverse().forEach(function (row) {
-              pushLog(row.status === "late" ? "late" : "", row.student_name, row.student_no + " · " + row.checked_in_at);
+              pushLog({
+                kind: row.status === "late" ? "late" : "",
+                name: escapeHtml(row.student_name),
+                detail: escapeHtml(row.student_no) + " · " + escapeHtml(formatStamp(row.checked_in_at))
+              });
             });
           }
         })
@@ -426,6 +430,13 @@
   }
 
   /* ---------------- boot ---------------- */
+
+  /** Always read the station label at submit time so late edits are captured. */
+  function currentStation() {
+    var el = $("station-input");
+    if (el) { state.station = el.value; }
+    return state.station;
+  }
 
   function boot(options) {
     options = options || {};
@@ -439,6 +450,7 @@
     var stationInput = $("station-input");
     if (stationInput) {
       state.station = stationInput.value;
+      stationInput.addEventListener("input", function () { state.station = stationInput.value; });
       stationInput.addEventListener("change", function () { state.station = stationInput.value; });
     }
 
@@ -462,6 +474,33 @@
 
     if (options.autostart) { startCamera(); }
   }
+
+  function bootFromReader() {
+    var reader = $("reader");
+    if (!reader || reader.getAttribute("data-scanner-mode") === null) { return; }
+
+    if (!global.Html5Qrcode && !("BarcodeDetector" in global)) {
+      cameraFallback("The QR decoder could not be loaded. Refresh the page and check your internet/cache settings.");
+      return;
+    }
+
+    boot({
+      mode: reader.getAttribute("data-scanner-mode") || "station",
+      eventId: parseInt(reader.getAttribute("data-scanner-event-id"), 10) || 0,
+      endpoint: reader.getAttribute("data-scanner-endpoint") || "",
+      statsUrl: reader.getAttribute("data-scanner-stats-url") || "",
+      csrf: reader.getAttribute("data-scanner-csrf") || "",
+      sound: reader.getAttribute("data-scanner-sound") !== "false",
+      autostart: reader.getAttribute("data-scanner-autostart") === "true"
+    });
+  }
+
+  function onReady(fn) {
+    if (document.readyState !== "loading") { fn(); }
+    else { document.addEventListener("DOMContentLoaded", fn, { once: true }); }
+  }
+
+  onReady(bootFromReader);
 
   global.ZDSPGCScanner = {
     boot: boot,

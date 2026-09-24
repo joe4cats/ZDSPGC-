@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   role          TEXT NOT NULL DEFAULT 'officer',
   password_hash TEXT NOT NULL,
   status        TEXT NOT NULL DEFAULT 'active',
+  avatar        TEXT NOT NULL DEFAULT '',
   created_at    TEXT NOT NULL,
   last_login_at TEXT
 );

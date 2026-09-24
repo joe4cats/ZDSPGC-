@@ -23,7 +23,7 @@ $PAGE_ACTIVE  = 'dashboard';
 $PAGE_SUB     = 'Attendance overview · ' . Helpers::e(date('l, F j, Y'));
 $PAGE_ACTIONS = '';
 if (Auth::can('run_scanner')) {
-    $PAGE_ACTIONS .= '<a class="btn gold" href="' . Helpers::e(Helpers::url('scan.php')) . '">' . icon('scan')
+    $PAGE_ACTIONS .= '<a class="btn" href="' . Helpers::e(Helpers::url('scan.php')) . '">' . icon('scan')
         . '<span>Open scan station</span></a>';
 }
 if (Auth::can('manage_events')) {
@@ -39,7 +39,7 @@ require __DIR__ . '/includes/layout/header.php';
     <div class="num"><?= (int) $stats['today_total'] ?></div>
     <div class="lbl">Check-ins today</div>
   </div>
-  <div class="stat gold">
+  <div class="stat">
     <div class="num"><?= (float) $stats['today_rate'] ?>%</div>
     <div class="lbl">Turnout today (of <?= (int) $stats['students'] ?> active students)</div>
   </div>
@@ -69,7 +69,7 @@ require __DIR__ . '/includes/layout/header.php';
         <a href="<?= Helpers::e(Helpers::url('events.php')) ?>">Events</a> page.</p>
     <?php else: ?>
       <div class="table-wrap">
-        <table class="tbl">
+        <table class="tbl responsive">
           <thead>
             <tr><th>Event</th><th>Window</th><th class="num">In</th><th style="width:170px;">Turnout</th><th>Status</th></tr>
           </thead>
@@ -80,23 +80,23 @@ require __DIR__ . '/includes/layout/header.php';
               $rate  = Helpers::percent($total, max(1, (int) $stats['students']));
               $badge = match ($state['state']) {
                   'open'     => '<span class="badge"><span class="dot"></span>Open</span>',
-                  'upcoming' => '<span class="badge gold">Upcoming</span>',
+                  'upcoming' => '<span class="badge grey">Upcoming</span>',
                   'ended'    => '<span class="badge grey">Ended</span>',
                   default    => '<span class="badge grey">Closed</span>',
               };
           ?>
             <tr>
-              <td>
+              <td data-label="Event">
                 <a href="<?= Helpers::e(Helpers::url('event.php', ['id' => (int) $event['id']])) ?>"><strong><?= Helpers::e((string) $event['title']) ?></strong></a><br>
                 <span class="small muted mono"><?= Helpers::e((string) $event['code']) ?> · <?= Helpers::e((string) $event['venue']) ?></span>
               </td>
-              <td class="small"><?= Helpers::e(Helpers::fmtWindow((string) $event['starts_at'], (string) $event['ends_at'])) ?></td>
-              <td class="num"><?= $total ?></td>
-              <td>
-                <div class="bar<?= $rate < 50 ? ' gold' : '' ?>"><i style="width:<?= (float) $rate ?>%"></i></div>
+              <td class="small" data-label="Window"><?= Helpers::e(Helpers::fmtWindow((string) $event['starts_at'], (string) $event['ends_at'])) ?></td>
+              <td class="num" data-label="In"><?= $total ?></td>
+              <td data-label="Turnout">
+                <div class="bar<?= $rate < 50 ? ' low' : '' ?>"><i style="width:<?= (float) $rate ?>%"></i></div>
                 <span class="small muted"><?= (float) $rate ?>%</span>
               </td>
-              <td><?= $badge ?></td>
+              <td data-label="Status"><?= $badge ?></td>
             </tr>
           <?php endforeach; ?>
           </tbody>
@@ -113,13 +113,14 @@ require __DIR__ . '/includes/layout/header.php';
       <div class="log-list">
       <?php foreach ($recent as $row): ?>
         <div class="log-item <?= ((string) $row['status'] === Attendance::LATE) ? 'late' : '' ?>">
-          <span>
-            <strong><?= Helpers::e((string) $row['student_name']) ?></strong>
-            <span class="small muted">· <?= Helpers::e((string) $row['student_no']) ?> · <?= Helpers::e((string) $row['event_code']) ?></span>
-          </span>
-          <span class="t"><?= Helpers::e(Helpers::fmtTime((string) $row['checked_in_at'])) ?>
-            <?= ((string) $row['status'] === Attendance::LATE) ? '<span class="badge gold">late</span>' : '<span class="badge">on time</span>' ?>
-          </span>
+          <div class="log-who">
+            <strong class="log-name"><?= Helpers::e((string) $row['student_name']) ?></strong>
+            <span class="log-meta"><?= Helpers::e((string) $row['student_no']) ?> · <?= Helpers::e((string) $row['event_code']) ?><?= isset($row['event_title']) && (string) $row['event_title'] !== '' ? ' — ' . Helpers::e((string) $row['event_title']) : '' ?></span>
+          </div>
+          <div class="log-when">
+            <span class="log-time"><?= Helpers::e(Helpers::fmtTime((string) $row['checked_in_at'])) ?></span>
+            <?= ((string) $row['status'] === Attendance::LATE) ? '<span class="badge red">late</span>' : '<span class="badge">on time</span>' ?>
+          </div>
         </div>
       <?php endforeach; ?>
       </div>
@@ -135,7 +136,7 @@ require __DIR__ . '/includes/layout/header.php';
       <p class="empty">No open events. Events close automatically once their end time passes.</p>
     <?php else: ?>
       <div class="table-wrap">
-        <table class="tbl">
+        <table class="tbl responsive">
           <thead><tr><th>Event</th><th>Starts</th><th>Grace</th><th>Self</th><th class="right">Action</th></tr></thead>
           <tbody>
           <?php foreach ($live as $event):
@@ -143,12 +144,12 @@ require __DIR__ . '/includes/layout/header.php';
               $counters = Attendance::counters((int) $event['id']);
           ?>
             <tr>
-              <td><strong><?= Helpers::e((string) $event['title']) ?></strong><br><span class="small muted mono"><?= Helpers::e((string) $event['code']) ?></span></td>
-              <td class="small"><?= Helpers::e(Helpers::fmtDateTime((string) $event['starts_at'])) ?><br>
+              <td data-label="Event"><strong><?= Helpers::e((string) $event['title']) ?></strong><br><span class="small muted mono"><?= Helpers::e((string) $event['code']) ?></span></td>
+              <td class="small" data-label="Starts"><?= Helpers::e(Helpers::fmtDateTime((string) $event['starts_at'])) ?><br>
                 <span class="small muted"><?= $state['state'] === 'open' ? 'open now' : Helpers::e($state['message']) ?></span></td>
-              <td class="small"><?= (int) $event['grace_minutes'] ?> min</td>
-              <td><?= !empty($event['self_checkin']) ? '<span class="badge">on</span>' : '<span class="badge grey">off</span>' ?></td>
-              <td class="right nowrap">
+              <td class="small" data-label="Grace"><?= (int) $event['grace_minutes'] ?> min</td>
+              <td data-label="Self"><?= !empty($event['self_checkin']) ? '<span class="badge">on</span>' : '<span class="badge grey">off</span>' ?></td>
+              <td class="right nowrap" data-label="Action">
                 <a class="btn sm" href="<?= Helpers::e(Helpers::url('scan.php', ['event' => (int) $event['id']])) ?>"><?= icon('scan') ?><span>Station</span></a>
                 <span class="badge grey"><?= (int) $counters['total'] ?> in</span>
               </td>

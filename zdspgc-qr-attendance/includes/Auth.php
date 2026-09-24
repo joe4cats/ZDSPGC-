@@ -107,6 +107,7 @@ final class Auth
         $_SESSION['role']       = (string) $user['role'];
         $_SESSION['name']       = (string) $user['full_name'];
         $_SESSION['username']   = (string) $user['username'];
+        $_SESSION['avatar']     = (string) ($user['avatar'] ?? '');
         $_SESSION['login_at']   = time();
         $_SESSION['last_seen']  = time();
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -157,6 +158,41 @@ final class Auth
         return self::check() ? (string) ($_SESSION['name'] ?? '') : null;
     }
 
+    /**
+     * Avatar file name for the signed-in user ("" when none). Falls back to a
+     * one-time database read for sessions that started before avatar support.
+     */
+    public static function avatar(): string
+    {
+        if (!self::check()) {
+            return '';
+        }
+        if (array_key_exists('avatar', $_SESSION)) {
+            return (string) $_SESSION['avatar'];
+        }
+        $row = Database::one('SELECT avatar FROM users WHERE id = :id', ['id' => self::id()]);
+        $_SESSION['avatar'] = (string) ($row['avatar'] ?? '');
+        return (string) $_SESSION['avatar'];
+    }
+
+    /** @return array{0:string,1:string}|null [safe URL, file path] when the avatar file exists. */
+    public static function avatarFile(): ?array
+    {
+        $name = self::avatar();
+        if ($name === '') {
+            return null;
+        }
+        $name = basename($name);
+        if (preg_match('/^[A-Za-z0-9._-]{1,80}$/', $name) !== 1) {
+            return null;
+        }
+        $path = dirname(__DIR__) . '/assets/img/avatars/' . $name;
+        if (!is_file($path)) {
+            return null;
+        }
+        return [Helpers::url('assets/img/avatars/' . $name), $path];
+    }
+
     /** Fresh copy of the signed-in user row (no password hash). */
     public static function user(): ?array
     {
@@ -164,7 +200,7 @@ final class Auth
             return null;
         }
         return Database::one(
-            'SELECT id, username, full_name, role, status, created_at, last_login_at FROM users WHERE id = :id',
+            'SELECT id, username, full_name, role, status, avatar, created_at, last_login_at FROM users WHERE id = :id',
             ['id' => self::id()]
         );
     }

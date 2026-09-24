@@ -71,7 +71,7 @@ require __DIR__ . '/includes/layout/header.php';
     </label>
     <div class="row">
       <button type="submit"><?= icon('search') ?><span>Apply</span></button>
-      <button class="gold" type="button" data-print><?= icon('print') ?><span>Print sheet</span></button>
+      <button type="button" data-print><?= icon('print') ?><span>Print sheet</span></button>
       <a class="btn ghost" href="<?= Helpers::e(Helpers::url('qr_cards.php')) ?>">Reset</a>
     </div>
   </form>

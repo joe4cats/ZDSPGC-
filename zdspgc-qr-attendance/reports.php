@@ -123,7 +123,7 @@ require __DIR__ . '/includes/layout/header.php';
     <div class="num"><?= (int) $totals['late'] ?></div>
     <div class="lbl">Late</div>
   </div>
-  <div class="stat gold">
+  <div class="stat">
     <div class="num"><?= Helpers::percent((int) $totals['records'], max(1, (int) $totals['events'] * $active)) ?>%</div>
     <div class="lbl">Average turnout (of <?= (int) $active ?> active students)</div>
   </div>
@@ -149,7 +149,7 @@ require __DIR__ . '/includes/layout/header.php';
     <p class="empty">No events to report on<?= $onlyToday ? ' for today' : '' ?>.</p>
   <?php else: ?>
     <div class="table-wrap">
-      <table class="tbl">
+      <table class="tbl responsive">
         <thead>
           <tr>
             <th>Event</th><th>Window</th><th class="num">Present</th><th class="num">On time</th>
@@ -164,21 +164,21 @@ require __DIR__ . '/includes/layout/header.php';
             $state = Attendance::windowState($row);
         ?>
           <tr>
-            <td>
+            <td data-label="Event">
               <a href="<?= Helpers::e(Helpers::url('event.php', ['id' => $id])) ?>"><strong><?= Helpers::e((string) $row['title']) ?></strong></a><br>
               <span class="small muted mono"><?= Helpers::e((string) $row['code']) ?></span>
               <span class="badge <?= $state['state'] === 'open' ? '' : 'grey' ?>"><?= Helpers::e($state['state']) ?></span>
             </td>
-            <td class="small"><?= Helpers::e(Helpers::fmtWindow((string) $row['starts_at'], (string) $row['ends_at'])) ?><br>
+            <td class="small" data-label="Window"><?= Helpers::e(Helpers::fmtWindow((string) $row['starts_at'], (string) $row['ends_at'])) ?><br>
               <span class="muted"><?= Helpers::e((string) $row['venue']) ?></span></td>
-            <td class="num"><?= (int) $row['total'] ?></td>
-            <td class="num"><?= (int) $row['on_time'] ?></td>
-            <td class="num"><?= (int) $row['late'] ?></td>
-            <td>
-              <div class="bar<?= $rate < 50 ? ' gold' : '' ?>"><i style="width:<?= (float) $rate ?>%"></i></div>
+            <td class="num" data-label="Present"><?= (int) $row['total'] ?></td>
+            <td class="num" data-label="On time"><?= (int) $row['on_time'] ?></td>
+            <td class="num" data-label="Late"><?= (int) $row['late'] ?></td>
+            <td data-label="Turnout">
+              <div class="bar<?= $rate < 50 ? ' low' : '' ?>"><i style="width:<?= (float) $rate ?>%"></i></div>
               <span class="small muted"><?= (float) $rate ?>% · <?= (int) $absent ?> with no record</span>
             </td>
-            <td class="right nowrap">
+            <td class="right nowrap" data-label="Details">
               <div class="link-actions" style="justify-content:flex-end;">
                 <a class="btn sm ghost" href="<?= Helpers::e(Helpers::url('reports.php', ['event' => $id, 'view' => 'absent'])) ?>"><?= icon('list') ?><span>Absentees</span></a>
                 <a class="btn sm ghost" href="<?= Helpers::e(Helpers::url('export.php', ['type' => 'attendance', 'event_id' => $id])) ?>"><?= icon('download') ?><span>CSV</span></a>

@@ -248,23 +248,23 @@ require __DIR__ . '/includes/layout/header.php';
 
 <div class="card">
   <div class="table-wrap">
-    <table class="tbl">
+    <table class="tbl responsive">
       <thead>
         <tr><th>Account</th><th>Role</th><th>Status</th><th>Last sign-in</th><th>Created</th><th class="right">Actions</th></tr>
       </thead>
       <tbody>
       <?php foreach ($users as $user): $uid = (int) $user['id']; ?>
         <tr>
-          <td><strong><?= Helpers::e((string) $user['full_name']) ?></strong><br>
+          <td data-label="Account"><strong><?= Helpers::e((string) $user['full_name']) ?></strong><br>
             <span class="small muted mono"><?= Helpers::e((string) $user['username']) ?></span>
             <?php if ($uid === (int) Auth::id()): ?> <span class="badge blue">you</span><?php endif; ?></td>
-          <td class="small"><?= Helpers::e(Auth::roleLabel((string) $user['role'])) ?></td>
-          <td><?= (string) $user['status'] === 'active'
+          <td class="small" data-label="Role"><?= Helpers::e(Auth::roleLabel((string) $user['role'])) ?></td>
+          <td data-label="Status"><?= (string) $user['status'] === 'active'
               ? '<span class="badge">active</span>'
               : '<span class="badge grey">inactive</span>' ?></td>
-          <td class="small"><?= Helpers::e($user['last_login_at'] === null ? 'never' : Helpers::humanAgo((string) $user['last_login_at'])) ?></td>
-          <td class="small"><?= Helpers::e(Helpers::fmtDate((string) $user['created_at'])) ?></td>
-          <td class="right nowrap">
+          <td class="small" data-label="Last sign-in"><?= Helpers::e($user['last_login_at'] === null ? 'never' : Helpers::humanAgo((string) $user['last_login_at'])) ?></td>
+          <td class="small" data-label="Created"><?= Helpers::e(Helpers::fmtDate((string) $user['created_at'])) ?></td>
+          <td class="right nowrap" data-label="Actions">
             <div class="link-actions" style="justify-content:flex-end;">
               <a class="btn sm ghost" href="<?= Helpers::e(Helpers::url('users.php', ['edit' => $uid])) ?>"><?= icon('edit') ?><span>Edit</span></a>
               <form method="post" class="inline-form">
@@ -297,17 +297,17 @@ require __DIR__ . '/includes/layout/header.php';
     <p class="empty">Nothing logged yet.</p>
   <?php else: ?>
     <div class="table-wrap">
-      <table class="tbl" id="audit-table">
+      <table class="tbl responsive" id="audit-table">
         <thead><tr><th>When</th><th>Actor</th><th>Role</th><th>Action</th><th>Detail</th><th>IP</th></tr></thead>
         <tbody>
         <?php foreach ($audit as $row): ?>
           <tr>
-            <td class="small nowrap"><?= Helpers::e(Helpers::fmtDateTime((string) $row['created_at'])) ?></td>
-            <td class="small"><?= Helpers::e((string) $row['actor']) ?></td>
-            <td class="small"><?= Helpers::e((string) $row['role']) ?></td>
-            <td class="small mono"><?= Helpers::e((string) $row['action']) ?></td>
-            <td class="small"><?= Helpers::e((string) $row['detail']) ?></td>
-            <td class="small mono"><?= Helpers::e((string) $row['ip']) ?></td>
+            <td class="small nowrap" data-label="When"><?= Helpers::e(Helpers::fmtDateTime((string) $row['created_at'])) ?></td>
+            <td class="small" data-label="Actor"><?= Helpers::e((string) $row['actor']) ?></td>
+            <td class="small" data-label="Role"><?= Helpers::e((string) $row['role']) ?></td>
+            <td class="small mono" data-label="Action"><?= Helpers::e((string) $row['action']) ?></td>
+            <td class="small" data-label="Detail"><?= Helpers::e((string) $row['detail']) ?></td>
+            <td class="small mono" data-label="IP"><?= Helpers::e((string) ($row['ip'] !== '' ? $row['ip'] : '—')) ?></td>
           </tr>
         <?php endforeach; ?>
         </tbody>

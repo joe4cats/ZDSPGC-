@@ -110,32 +110,32 @@ require __DIR__ . '/includes/layout/header.php';
     <p class="empty">No attendance records match those filters.</p>
   <?php else: ?>
     <div class="table-wrap">
-      <table class="tbl">
+      <table class="tbl responsive">
         <thead>
           <tr><th>When</th><th>Student</th><th>Course</th><th>Event</th><th>Status</th><th>Method</th><th>Station / operator</th><th>IP</th></tr>
         </thead>
         <tbody>
         <?php foreach ($records as $row): ?>
           <tr>
-            <td class="nowrap"><?= Helpers::e(Helpers::fmtDateTime((string) $row['checked_in_at'])) ?></td>
-            <td>
+            <td class="nowrap" data-label="When"><?= Helpers::e(Helpers::fmtDateTime((string) $row['checked_in_at'])) ?></td>
+            <td data-label="Student">
               <a href="<?= Helpers::e(Helpers::url('student.php', ['id' => (int) $row['student_id']])) ?>"><strong><?= Helpers::e((string) $row['student_name']) ?></strong></a><br>
               <span class="small muted mono"><?= Helpers::e((string) $row['student_no']) ?></span>
             </td>
-            <td class="small"><?= Helpers::e((string) $row['course']) ?><br>
+            <td class="small" data-label="Course"><?= Helpers::e((string) $row['course']) ?><br>
               <span class="muted"><?= Helpers::e((string) $row['year_level']) ?> <?= Helpers::e((string) $row['section']) ?></span></td>
-            <td class="small">
+            <td class="small" data-label="Event">
               <a href="<?= Helpers::e(Helpers::url('event.php', ['id' => (int) $row['event_id']])) ?>"><?= Helpers::e((string) $row['event_code']) ?></a><br>
               <span class="muted"><?= Helpers::e((string) $row['event_title']) ?></span>
             </td>
-            <td><?= (string) $row['status'] === Attendance::LATE
-                ? '<span class="badge gold">late</span>'
+            <td data-label="Status"><?= (string) $row['status'] === Attendance::LATE
+                ? '<span class="badge red">late</span>'
                 : '<span class="badge">on time</span>' ?></td>
-            <td class="small"><?= Helpers::e(Attendance::methodLabel((string) $row['method'])) ?><br>
+            <td class="small" data-label="Method"><?= Helpers::e(Attendance::methodLabel((string) $row['method'])) ?><br>
               <span class="muted"><?= (string) $row['source'] === 'self' ? 'student device' : 'station' ?></span></td>
-            <td class="small"><?= Helpers::e((string) $row['station'] !== '' ? (string) $row['station'] : '—') ?><br>
+            <td class="small" data-label="Station / operator"><?= Helpers::e((string) $row['station'] !== '' ? (string) $row['station'] : '—') ?><br>
               <span class="muted"><?= Helpers::e((string) $row['scanned_by'] !== '' ? (string) $row['scanned_by'] : '—') ?></span></td>
-            <td class="small mono"><?= Helpers::e((string) $row['ip']) ?></td>
+            <td class="small mono" data-label="IP"><?= Helpers::e((string) ($row['ip'] !== '' ? $row['ip'] : '—')) ?></td>
           </tr>
         <?php endforeach; ?>
         </tbody>

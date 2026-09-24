@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   role          VARCHAR(20)  NOT NULL DEFAULT 'officer',
   password_hash VARCHAR(255) NOT NULL,
   status        VARCHAR(20)  NOT NULL DEFAULT 'active',
+  avatar        VARCHAR(255) NOT NULL DEFAULT '',
   created_at    DATETIME     NOT NULL,
   last_login_at DATETIME     NULL,
   PRIMARY KEY (id),

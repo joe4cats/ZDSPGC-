@@ -24,6 +24,35 @@ final class Schema
         }
     }
 
+    /**
+     * Lightweight forward migration for databases installed before a column
+     * existed (CREATE TABLE IF NOT EXISTS never alters an existing table).
+     * Runs at most once per request and only issues an ALTER when needed.
+     */
+    public static function ensureColumns(): void
+    {
+        static $done = false;
+        if ($done) {
+            return;
+        }
+        $done = true;
+        try {
+            if (Database::driver() === 'mysql') {
+                $names = array_map(static fn ($c) => (string) ($c['Field'] ?? ''), Database::all('SHOW COLUMNS FROM users'));
+                if (!in_array('avatar', $names, true)) {
+                    Database::run("ALTER TABLE users ADD COLUMN avatar VARCHAR(255) NOT NULL DEFAULT '' AFTER status");
+                }
+                return;
+            }
+            $names = array_map(static fn ($c) => (string) ($c['name'] ?? ''), Database::all('PRAGMA table_info(users)'));
+            if (!in_array('avatar', $names, true)) {
+                Database::run("ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT ''");
+            }
+        } catch (Throwable $e) {
+            // Not installed yet (or concurrent install) — migrate() will add it.
+        }
+    }
+
     public static function schemaFile(): string
     {
         $file = Database::driver() === 'mysql' ? 'mysql-schema.sql' : 'sqlite-schema.sql';
@@ -272,7 +301,7 @@ final class Schema
                         'station'       => $event['code'] === 'EVT-FOUND-2026' ? 'Main Gate' : 'Gymnasium Door',
                         'scanned_by'    => 'Jessa P. Lim',
                         'remark'        => '',
-                        'ip'            => '192.168.1.20',
+                        'ip'            => Security::ip(),
                         'user_agent'    => 'ZDSPGC demo seed',
                     ]);
                     $counts['attendance']++;

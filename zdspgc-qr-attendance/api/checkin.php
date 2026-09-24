@@ -38,13 +38,31 @@ if (!$rate['allowed']) {
 $token     = Helpers::input('token');
 $studentNo = Security::clean(Helpers::input('student_no'), 30);
 $eventId   = (int) (Helpers::input('event_id') ?? 0);
-$method    = (string) (Helpers::input('method') ?? 'qr');
 $source    = (string) (Helpers::input('source') ?? 'station');
 $station   = Security::clean(Helpers::input('station'), 80);
 
 $source = $source === 'self' ? 'self' : 'station';
-if ($source === 'self') {
-    $method = 'qr';        // self check-in is always a scan
+
+// method is derived from how the student was identified — never trusted from
+// the client (token = QR scan, student number = manual entry, self = scan).
+if ($source === 'self' || ($token !== null && $token !== '')) {
+    $method = 'qr';
+} else {
+    $method = 'manual';
+}
+
+// Station check-ins must come from a signed-in officer. Self check-in is the
+// only path that may run without a staff session (it is gated by the event's
+// self_checkin flag instead).
+if ($source === 'station' && !Auth::can('run_scanner')) {
+    Helpers::jsonOut([
+        'ok'       => false,
+        'code'     => 'station_auth',
+        'message'  => 'Station check-in needs a signed-in officer. Please sign in again.',
+        'student'  => null,
+        'record'   => null,
+        'counters' => null,
+    ], 403);
 }
 
 /* ---- which event? ---- */

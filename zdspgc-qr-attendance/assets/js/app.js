@@ -159,6 +159,35 @@
     render();
   }
 
+  /** Live preview of the chosen profile picture: <input data-avatar-preview="#sel"> */
+  function wireAvatarPreview() {
+    document.querySelectorAll("[data-avatar-preview]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        var file = input.files && input.files[0];
+        if (!file) { return; }
+        if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+          global.alert("Please choose a JPG, PNG or WEBP image.");
+          input.value = "";
+          return;
+        }
+        var container = document.querySelector(input.getAttribute("data-avatar-preview"));
+        if (!container) { return; }
+        var host = container.parentNode;
+        var img = host.querySelector("img");
+        if (!img) {
+          img = document.createElement("img");
+          img.alt = "";
+          host.appendChild(img);
+        }
+        var reader = new FileReader();
+        reader.onload = function (event) {
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  }
+
   onReady(function () {
     wireConfirms();
     wireFilters();
@@ -169,6 +198,7 @@
     wireFlashes();
     wireSidebar();
     wireLoginLockout();
+    wireAvatarPreview();
   });
 
   global.ZDSPGC = { onReady: onReady };

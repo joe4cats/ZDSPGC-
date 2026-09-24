@@ -68,60 +68,57 @@ $flashes = Helpers::takeFlashes();
   <link rel="stylesheet" href="<?= Helpers::e(Helpers::url('assets/css/style.css')) ?>">
 </head>
 <body class="login-page">
-  <div class="govbar">
-    <span class="flag"><?= flag_ph() ?><?= Helpers::e(SCHOOL_NAME) ?> · <?= Helpers::e(SCHOOL_CAMPUS) ?></span>
-    <span class="govbar-right"><?= icon('shield') ?> Authorised staff only</span>
-  </div>
-
-  <main class="wrap" style="max-width:520px;">
-    <div class="center" style="margin:34px 0 22px;">
-      <div class="brand lg" style="justify-content:center;">
-        <img class="brand-logo" src="<?= Helpers::e(Helpers::url('assets/img/logo.png')) ?>" alt="ZDSPGC seal" width="78" height="78">
-        <span style="text-align:center;">
-          <span class="name"><?= Helpers::e(APP_SHORT) ?></span>
-          <span class="sub">Event check-in system · <?= Helpers::e(SCHOOL_CAMPUS) ?></span>
-        </span>
+  <main class="login-shell">
+    <header class="login-brand">
+      <img class="login-logo" src="<?= Helpers::e(Helpers::url('assets/img/logo.png')) ?>" alt="ZDSPGC seal" width="84" height="84">
+      <div>
+        <span class="login-title"><?= Helpers::e(APP_SHORT) ?></span>
+        <span class="login-sub">Event check-in system · <?= Helpers::e(SCHOOL_CAMPUS) ?></span>
       </div>
-      <p class="lead mt">Sign in to open the dashboard, manage events and run the QR scan station.</p>
-    </div>
+    </header>
 
-    <?php foreach ($flashes as $flash): ?>
-      <div class="flash <?= Helpers::e((string) $flash['type']) ?>">
-        <?= icon('bell') ?><span><?= Helpers::e((string) $flash['message']) ?></span>
+    <section class="login-card" aria-labelledby="signin-title">
+      <div class="login-card-head">
+        <h1 id="signin-title">Sign in</h1>
+        <p>Authorised staff only — administrator, officer and faculty accounts.</p>
       </div>
-    <?php endforeach; ?>
 
-    <?php if ($error !== ''): ?>
-      <div class="flash <?= $lockoutRemaining > 0 ? 'error login-lockout' : 'error' ?>" role="alert"
-        <?php if ($lockoutRemaining > 0): ?>data-lockout-seconds="<?= $lockoutRemaining ?>"<?php endif; ?>>
-        <?= icon('alert') ?>
-        <span>
-          <?= Helpers::e($error) ?>
-          <?php if ($lockoutRemaining > 0): ?>
-            <strong class="lockout-countdown" aria-live="polite">Please wait <span data-lockout-timer>0:00</span> before trying again.</strong>
-          <?php endif; ?>
-        </span>
-      </div>
-    <?php endif; ?>
+      <?php foreach ($flashes as $flash): ?>
+        <div class="flash <?= Helpers::e((string) $flash['type']) ?>">
+          <?= icon('bell') ?><span><?= Helpers::e((string) $flash['message']) ?></span>
+        </div>
+      <?php endforeach; ?>
 
-    <div class="card">
+      <?php if ($error !== ''): ?>
+        <div class="flash <?= $lockoutRemaining > 0 ? 'error login-lockout' : 'error' ?>" role="alert"
+          <?php if ($lockoutRemaining > 0): ?>data-lockout-seconds="<?= $lockoutRemaining ?>"<?php endif; ?>>
+          <?= icon('alert') ?>
+          <span>
+            <?= Helpers::e($error) ?>
+            <?php if ($lockoutRemaining > 0): ?>
+              <strong class="lockout-countdown" aria-live="polite">Please wait <span data-lockout-timer>0:00</span> before trying again.</strong>
+            <?php endif; ?>
+          </span>
+        </div>
+      <?php endif; ?>
+
       <form method="post" action="<?= Helpers::e(Helpers::url('login.php')) ?>" autocomplete="on">
         <?= Security::csrfField() ?>
         <label class="field">
           <span>Username</span>
-          <input type="text" name="username" value="<?= Helpers::e($username) ?>" required autofocus autocomplete="username" <?= $lockoutRemaining > 0 ? 'disabled' : '' ?>>
+          <input type="text" name="username" value="<?= Helpers::e($username) ?>" required autofocus autocomplete="username" placeholder="e.g. admin" <?= $lockoutRemaining > 0 ? 'disabled' : '' ?>>
         </label>
         <label class="field">
           <span>Password</span>
-          <input type="password" name="password" required autocomplete="current-password" <?= $lockoutRemaining > 0 ? 'disabled' : '' ?>>
+          <input type="password" name="password" required autocomplete="current-password" placeholder="Your password" <?= $lockoutRemaining > 0 ? 'disabled' : '' ?>>
         </label>
         <button class="block" type="submit" <?= $lockoutRemaining > 0 ? 'disabled' : '' ?>>
           <?= icon('lock') ?><span><?= $lockoutRemaining > 0 ? 'Sign-in locked' : 'Sign in' ?></span>
         </button>
       </form>
-    </div>
+    </section>
 
-    <p class="small muted center mt">
+    <p class="login-note">
       Passwords are stored as bcrypt hashes. Five wrong attempts locks sign-in for <?= (int) LOGIN_LOCKOUT_MINUTES ?> minutes.<br>
       Students do not sign in — they only need their QR ID at the scan station.
     </p>

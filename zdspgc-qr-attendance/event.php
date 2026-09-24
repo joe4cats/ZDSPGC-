@@ -87,7 +87,7 @@ $PAGE_SUB    = '<span class="mono">' . Helpers::e((string) $event['code']) . '</
     . ' · ' . Helpers::e((string) $event['venue']);
 
 $PAGE_ACTIONS = Auth::can('run_scanner')
-    ? '<a class="btn gold" href="' . Helpers::e(Helpers::url('scan.php', ['event' => $id])) . '">' . icon('scan') . '<span>Open scan station</span></a>'
+    ? '<a class="btn" href="' . Helpers::e(Helpers::url('scan.php', ['event' => $id])) . '">' . icon('scan') . '<span>Open scan station</span></a>'
     : '';
 $PAGE_ACTIONS .= '<a class="btn ghost" href="' . Helpers::e(Helpers::url('export.php', ['type' => 'attendance', 'event_id' => $id])) . '">'
     . icon('download') . '<span>Export CSV</span></a>';
@@ -113,7 +113,7 @@ require __DIR__ . '/includes/layout/header.php';
     <div class="num"><?= (int) $absent ?></div>
     <div class="lbl">No record yet</div>
   </div>
-  <div class="stat gold">
+  <div class="stat">
     <div class="num"><?= (float) ($summary['rate'] ?? 0) ?>%</div>
     <div class="lbl">Turnout of <?= (int) ($summary['registered'] ?? 0) ?> active students</div>
   </div>
@@ -218,7 +218,7 @@ require __DIR__ . '/includes/layout/header.php';
         ?>
           <div class="bar-row">
             <strong><?= Helpers::e((string) $row['course']) ?></strong>
-            <div class="bar<?= $rate < 50 ? ' gold' : '' ?>"><i style="width:<?= (float) $rate ?>%"></i></div>
+            <div class="bar<?= $rate < 50 ? ' low' : '' ?>"><i style="width:<?= (float) $rate ?>%"></i></div>
             <span class="small muted"><?= $present ?>/<?= $registered ?> · <?= (float) $rate ?>%</span>
           </div>
         <?php endforeach; ?>
@@ -247,7 +247,7 @@ require __DIR__ . '/includes/layout/header.php';
     <p class="empty">Nobody has been recorded for this event yet.</p>
   <?php else: ?>
     <div class="table-wrap">
-      <table class="tbl" id="records-table">
+      <table class="tbl responsive" id="records-table">
         <thead>
           <tr>
             <th>Time</th><th>Student</th><th>Course</th><th>Status</th><th>Method</th><th>Station / operator</th><th>Remark</th><th></th>
@@ -256,21 +256,21 @@ require __DIR__ . '/includes/layout/header.php';
         <tbody>
         <?php foreach ($records as $row): ?>
           <tr>
-            <td class="nowrap"><?= Helpers::e(Helpers::fmtTime((string) $row['checked_in_at'])) ?><br>
+            <td class="nowrap" data-label="Time"><?= Helpers::e(Helpers::fmtTime((string) $row['checked_in_at'])) ?><br>
               <span class="small muted"><?= Helpers::e(Helpers::humanAgo((string) $row['checked_in_at'])) ?></span></td>
-            <td><a href="<?= Helpers::e(Helpers::url('student.php', ['id' => (int) $row['student_id']])) ?>"><strong><?= Helpers::e((string) $row['student_name']) ?></strong></a>
+            <td data-label="Student"><a href="<?= Helpers::e(Helpers::url('student.php', ['id' => (int) $row['student_id']])) ?>"><strong><?= Helpers::e((string) $row['student_name']) ?></strong></a>
               <br><span class="small muted mono"><?= Helpers::e((string) $row['student_no']) ?></span></td>
-            <td class="small"><?= Helpers::e((string) $row['course']) ?><br>
+            <td class="small" data-label="Course"><?= Helpers::e((string) $row['course']) ?><br>
               <span class="muted"><?= Helpers::e((string) $row['year_level']) ?> <?= Helpers::e((string) $row['section']) ?></span></td>
-            <td><?= (string) $row['status'] === Attendance::LATE
-                ? '<span class="badge gold">late</span>'
+            <td data-label="Status"><?= (string) $row['status'] === Attendance::LATE
+                ? '<span class="badge red">late</span>'
                 : '<span class="badge">on time</span>' ?></td>
-            <td class="small"><?= Helpers::e(Attendance::methodLabel((string) $row['method'])) ?><br>
+            <td class="small" data-label="Method"><?= Helpers::e(Attendance::methodLabel((string) $row['method'])) ?><br>
               <span class="muted"><?= (string) $row['source'] === 'self' ? 'student device' : 'station' ?></span></td>
-            <td class="small"><?= Helpers::e((string) $row['station'] !== '' ? (string) $row['station'] : '—') ?><br>
+            <td class="small" data-label="Station / operator"><?= Helpers::e((string) $row['station'] !== '' ? (string) $row['station'] : '—') ?><br>
               <span class="muted"><?= Helpers::e((string) $row['scanned_by'] !== '' ? (string) $row['scanned_by'] : '—') ?></span></td>
-            <td class="small"><?= Helpers::e((string) $row['remark'] !== '' ? (string) $row['remark'] : '—') ?></td>
-            <td class="right">
+            <td class="small" data-label="Remark"><?= Helpers::e((string) $row['remark'] !== '' ? (string) $row['remark'] : '—') ?></td>
+            <td class="right" data-label="">
               <?php if ($canManage): ?>
                 <form method="post" class="inline-form" data-confirm="Remove this check-in from the event?">
                   <?= Security::csrfField() ?>

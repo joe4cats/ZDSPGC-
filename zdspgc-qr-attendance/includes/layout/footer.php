@@ -15,8 +15,8 @@ $EXTRA_JS = $EXTRA_JS ?? [];
   <footer class="site">
     <div class="foot-wrap">
       <div>
-        <strong><?= Helpers::e(APP_NAME) ?></strong> v<?= Helpers::e(APP_VERSION) ?><br>
-        <span class="muted"><?= Helpers::e(SCHOOL_NAME) ?> · <?= Helpers::e(SCHOOL_CAMPUS) ?></span>
+        <strong>ZDSPGC Event QR Attendance System</strong> • All rights reserved.<br>
+        <span class="muted">Secure Attendance Management • ZDSPGC · <?= Helpers::e(SCHOOL_CAMPUS) ?> · v<?= Helpers::e(APP_VERSION) ?></span>
       </div>
       <div class="muted small">
         Attendance data is stored on the school server. Names and student numbers are

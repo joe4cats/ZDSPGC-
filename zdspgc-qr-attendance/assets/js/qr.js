@@ -68,9 +68,10 @@
     (root || document).querySelectorAll("[data-qr]").forEach(renderElement);
   }
 
+
   function buttonStatus(button, message, success) {
-    var label = button.querySelector("span");
-    if (!label) { return; }
+    var label = button ? button.querySelector("span") : null;
+    if (!button || !label) { return; }
     if (!button.dataset.originalLabel) { button.dataset.originalLabel = label.textContent; }
     label.textContent = message;
     button.classList.toggle("copied", success !== false);
@@ -81,91 +82,143 @@
     }, 1800);
   }
 
-  /** Download the canvas inside a .qr element as a PNG file. */
+  function resolveQr(button) {
+    if (!button) { return null; }
+    var targetId = button.getAttribute("data-save-qr-target") || button.getAttribute("data-print-qr-target");
+    if (targetId) {
+      var explicit = document.getElementById(targetId);
+      if (explicit) { return explicit; }
+    }
+    return button.closest("[data-qr]");
+  }
+
+  function buttonBusy(button, message) {
+    var label = button.querySelector("span");
+    if (!label) { return; }
+    if (!button.dataset.originalLabel) { button.dataset.originalLabel = label.textContent; }
+    label.textContent = message;
+    button.disabled = true;
+  }
+
+  function buttonRelease(button, message) {
+    var label = button.querySelector("span");
+    button.disabled = false;
+    if (!label) { return; }
+    label.textContent = message || button.dataset.originalLabel || label.textContent;
+    button.classList.add("copied");
+  }
+
+  /** Save the rendered QR canvas directly to the browser Downloads folder. */
   function download(button) {
-    var holder = button.closest("[data-qr]");
+    var holder = resolveQr(button);
     var canvas = holder ? holder.querySelector("canvas") : null;
-    if (!canvas) {
-      buttonStatus(button, "QR is still loading");
+    if (!holder || !canvas) {
+      buttonStatus(button, "QR is still loading", false);
       return;
     }
 
-    var name = (holder.getAttribute("data-qr-name") || "qr-code").replace(/[^a-z0-9_-]+/gi, "-");
-    var finish = function (href, revoke) {
+    var name = ((holder.getAttribute("data-qr-name") || "qr-code").replace(/[^a-z0-9_-]+/gi, "-") || "qr-code") + ".png";
+    buttonBusy(button, "Saving QR…");
+
+    // Keep this as a direct download: never invoke the mobile share sheet here.
+    var downloadUrl = function (href, revoke) {
       var link = document.createElement("a");
-      link.download = name + ".png";
+      link.download = name;
+      link.rel = "noopener";
       link.href = href;
       link.style.display = "none";
       document.body.appendChild(link);
       link.click();
       link.remove();
-      if (revoke) { global.setTimeout(function () { global.URL.revokeObjectURL(href); }, 1000); }
-      buttonStatus(button, "PNG saved");
+      if (revoke) { global.setTimeout(function () { global.URL.revokeObjectURL(href); }, 5000); }
+      buttonRelease(button, "Saved to Downloads");
     };
 
-    // Blob downloads are faster and work well on current phones and desktops.
     if (canvas.toBlob) {
       canvas.toBlob(function (blob) {
-        if (blob) { finish(global.URL.createObjectURL(blob), true); }
-        else { finish(canvas.toDataURL("image/png"), false); }
+        if (blob) { downloadUrl(global.URL.createObjectURL(blob), true); }
+        else { downloadUrl(canvas.toDataURL("image/png"), false); }
       }, "image/png");
     } else {
-      finish(canvas.toDataURL("image/png"), false);
+      downloadUrl(canvas.toDataURL("image/png"), false);
     }
   }
 
   function printQr(button) {
-    var holder = button.closest("[data-qr]");
+    var holder = resolveQr(button);
     var text = holder ? holder.getAttribute("data-qr") : "";
     var canvas = holder ? holder.querySelector("canvas") : null;
-    if (!text || !canvas) {
-      buttonStatus(button, "QR is still loading");
+    if (!holder || !text || !canvas) {
+      buttonStatus(button, "QR is still loading", false);
       return;
     }
 
-    var w = global.open("", "_blank", "width=520,height=640");
-    if (!w) {
-      buttonStatus(button, "Allow pop-ups to print");
-      return;
-    }
-    var label = escapeHtml(holder.getAttribute("data-qr-label") || "QR code");
-    var img = canvas.toDataURL("image/png");
-    w.document.write(
-      '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">' +
-      '<title>QR code</title><style>@page{size:auto;margin:12mm}' +
-      'body{font-family:Segoe UI,system-ui,sans-serif;text-align:center;padding:18px;color:#16241c}' +
-      'img{width:min(82vw,320px);height:min(82vw,320px);background:#fff}' +
-      'code{display:block;margin-top:10px;font-size:10px;word-break:break-all;color:#555}' +
-      '@media print{button{display:none}}</style></head><body>' +
-      '<h3>' + label + '</h3><img src="' + img + '" alt="' + label + ' QR code">' +
-      '<code>' + escapeHtml(text) + '</code><br><button onclick="window.print()">Print</button>' +
-      '</body></html>'
-    );
-    w.document.close();
-    w.focus();
-    var printed = function () {
-      w.removeEventListener("afterprint", printed);
-      buttonStatus(button, "Print opened");
-      w.close();
+    buttonBusy(button, "Opening print view…");
+    document.body.classList.add("printing-qr");
+    Array.prototype.forEach.call(document.querySelectorAll("[data-print-qr]"), function (item) {
+      item.classList.toggle("qr-print-selected", item === holder);
+    });
+
+    var finished = false;
+    var cleanup = function () {
+      if (finished) { return; }
+      finished = true;
+      document.body.classList.remove("printing-qr");
+      var selected = document.querySelector(".qr-print-selected");
+      if (selected) { selected.classList.remove("qr-print-selected"); }
+      buttonRelease(button, "Print view ready");
+      global.setTimeout(function () {
+        if (button.dataset.originalLabel) {
+          var label = button.querySelector("span");
+          if (label) { label.textContent = button.dataset.originalLabel; }
+          button.classList.remove("copied");
+        }
+      }, 2500);
     };
-    w.addEventListener("afterprint", printed);
-    global.setTimeout(function () { w.print(); }, 250);
+
+    global.addEventListener("afterprint", cleanup, { once: true });
+    // afterprint does not fire consistently on mobile, so always restore the page.
+    global.setTimeout(cleanup, 3000);
+    global.setTimeout(function () { global.print(); }, 80);
   }
 
   function copyToken(button) {
-    var holder = button.closest("[data-qr]");
-    var text = holder ? holder.getAttribute("data-qr") : "";
-    if (!text) { return; }
+    var text = "";
+    var holder = resolveQr(button);
+    if (holder) { text = holder.getAttribute("data-qr") || ""; }
+    if (!text && button) { text = button.getAttribute("data-copy") || ""; }
+    if (!text) {
+      buttonStatus(button, "Nothing to copy", false);
+      return;
+    }
     if (global.navigator.clipboard && global.isSecureContext) {
+      buttonBusy(button, "Copying…");
       global.navigator.clipboard.writeText(text).then(function () {
-        buttonStatus(button, "Token copied");
-      }).catch(function () { buttonStatus(button, "Copy was blocked"); });
+        buttonRelease(button, "Token copied");
+      }).catch(function () {
+        buttonStatus(button, "Copy was blocked", false);
+        button.disabled = false;
+      });
     } else {
-      buttonStatus(button, "Use HTTPS to copy");
+      buttonStatus(button, "Use HTTPS to copy", false);
     }
   }
 
-  document.addEventListener("DOMContentLoaded", function () { renderAll(document); });
+  function wireQrButtons(root) {
+    (root || document).querySelectorAll("[data-print-qr-target],[data-save-qr-target]").forEach(function (button) {
+      if (button.dataset.qrWired) { return; }
+      button.dataset.qrWired = "true";
+      button.addEventListener("click", function () {
+        if (button.hasAttribute("data-print-qr-target")) { printQr(button); }
+        else { download(button); }
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    renderAll(document);
+    wireQrButtons(document);
+  });
 
   global.ZDSPGCQr = {
     render: renderAll,

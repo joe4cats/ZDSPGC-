@@ -275,72 +275,6 @@ require __DIR__ . '/includes/layout/header.php';
     </form>
   </div>
 
-  <?php if ($events === []): ?>
-    <p class="empty">No events found<?= $search !== '' ? ' for "' . Helpers::e($search) . '"' : '' ?>.</p>
-  <?php else: ?>
-    <div class="table-wrap">
-      <table class="tbl">
-        <thead>
-          <tr><th>Event</th><th>Window</th><th class="num">In</th><th class="num">Late</th><th>State</th><th class="right">Actions</th></tr>
-        </thead>
-        <tbody>
-        <?php foreach ($events as $event):
-            $id    = (int) $event['id'];
-            $state = Attendance::windowState($event);
-            $badge = match ($state['state']) {
-                'open'     => '<span class="badge"><span class="dot"></span>Open</span>',
-                'upcoming' => '<span class="badge gold">Upcoming</span>',
-                'ended'    => '<span class="badge grey">Ended</span>',
-                default    => '<span class="badge grey">Closed</span>',
-            };
-        ?>
-          <tr>
-            <td>
-              <a href="<?= Helpers::e(Helpers::url('event.php', ['id' => $id])) ?>"><strong><?= Helpers::e((string) $event['title']) ?></strong></a><br>
-              <span class="small muted mono"><?= Helpers::e((string) $event['code']) ?></span>
-              <?php if (!empty($event['self_checkin'])): ?> <span class="badge blue">self check-in</span><?php endif; ?>
-            </td>
-            <td class="small">
-              <?= Helpers::e(Helpers::fmtWindow((string) $event['starts_at'], (string) $event['ends_at'])) ?><br>
-              <span class="small muted"><?= Helpers::e((string) $event['venue']) ?> · grace <?= (int) $event['grace_minutes'] ?>m</span>
-            </td>
-            <td class="num"><?= (int) ($event['total'] ?? 0) ?></td>
-            <td class="num"><?= (int) ($event['late'] ?? 0) ?></td>
-            <td><?= $badge ?></td>
-            <td class="right nowrap">
-              <div class="link-actions" style="justify-content:flex-end;">
-                <a class="btn sm ghost" href="<?= Helpers::e(Helpers::url('events.php', ['edit' => $id])) ?>"><?= icon('edit') ?><span>Edit</span></a>
-                <a class="btn sm" href="<?= Helpers::e(Helpers::url('scan.php', ['event' => $id])) ?>"><?= icon('scan') ?><span>Scan</span></a>
-                <form method="post" class="inline-form">
-                  <?= Security::csrfField() ?>
-                  <input type="hidden" name="id" value="<?= $id ?>">
-                  <button class="sm ghost" name="action" value="toggle" type="submit">
-                    <?= icon((string) $event['status'] === 'open' ? 'lock' : 'refresh') ?>
-                    <span><?= (string) $event['status'] === 'open' ? 'Close' : 'Reopen' ?></span>
-                  </button>
-                </form>
-                <form method="post" class="inline-form" data-confirm="Issue a new poster QR? Old printed posters will stop working.">
-                  <?= Security::csrfField() ?>
-                  <input type="hidden" name="id" value="<?= $id ?>">
-                  <button class="sm ghost" name="action" value="reissue" type="submit"><?= icon('refresh') ?><span>New QR</span></button>
-                </form>
-                <form method="post" class="inline-form" data-confirm="Delete this event and ALL of its attendance records? This cannot be undone.">
-                  <?= Security::csrfField() ?>
-                  <input type="hidden" name="id" value="<?= $id ?>">
-                  <button class="sm ghost red" name="action" value="delete" type="submit"><?= icon('trash') ?><span>Delete</span></button>
-                </form>
-              </div>
-            </td>
-          </tr>
-        <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
-  <?php endif; ?>
-</div>
-
-<?php require __DIR__ . '/includes/layout/footer.php'; ?>
-
   <div class="card">
     <h3><?= icon('bell') ?> How the check-in window works</h3>
     <ul class="small" style="padding-left:18px; display:grid; gap:6px;">
@@ -369,3 +303,69 @@ require __DIR__ . '/includes/layout/header.php';
       <?php endif; ?>
     </div>
   </form>
+
+  <?php if ($events === []): ?>
+    <p class="empty">No events found<?= $search !== '' ? ' for "' . Helpers::e($search) . '"' : '' ?>.</p>
+  <?php else: ?>
+    <div class="table-wrap">
+      <table class="tbl responsive">
+        <thead>
+          <tr><th>Event</th><th>Window</th><th class="num">In</th><th class="num">Late</th><th>State</th><th class="right">Actions</th></tr>
+        </thead>
+        <tbody>
+        <?php foreach ($events as $event):
+            $id    = (int) $event['id'];
+            $state = Attendance::windowState($event);
+            $badge = match ($state['state']) {
+                'open'     => '<span class="badge"><span class="dot"></span>Open</span>',
+                'upcoming' => '<span class="badge grey">Upcoming</span>',
+                'ended'    => '<span class="badge grey">Ended</span>',
+                default    => '<span class="badge grey">Closed</span>',
+            };
+        ?>
+          <tr>
+            <td data-label="Event">
+              <a href="<?= Helpers::e(Helpers::url('event.php', ['id' => $id])) ?>"><strong><?= Helpers::e((string) $event['title']) ?></strong></a><br>
+              <span class="small muted mono"><?= Helpers::e((string) $event['code']) ?></span>
+              <?php if (!empty($event['self_checkin'])): ?> <span class="badge blue">self check-in</span><?php endif; ?>
+            </td>
+            <td class="small" data-label="Window">
+              <?= Helpers::e(Helpers::fmtWindow((string) $event['starts_at'], (string) $event['ends_at'])) ?><br>
+              <span class="small muted"><?= Helpers::e((string) $event['venue']) ?> · grace <?= (int) $event['grace_minutes'] ?>m</span>
+            </td>
+            <td class="num" data-label="In"><?= (int) ($event['total'] ?? 0) ?></td>
+            <td class="num" data-label="Late"><?= (int) ($event['late'] ?? 0) ?></td>
+            <td data-label="State"><?= $badge ?></td>
+            <td class="right nowrap" data-label="Actions">
+              <div class="link-actions" style="justify-content:flex-end;">
+                <a class="btn sm ghost" href="<?= Helpers::e(Helpers::url('events.php', ['edit' => $id])) ?>"><?= icon('edit') ?><span>Edit</span></a>
+                <a class="btn sm" href="<?= Helpers::e(Helpers::url('scan.php', ['event' => $id])) ?>"><?= icon('scan') ?><span>Scan</span></a>
+                <form method="post" class="inline-form">
+                  <?= Security::csrfField() ?>
+                  <input type="hidden" name="id" value="<?= $id ?>">
+                  <button class="sm ghost" name="action" value="toggle" type="submit" title="<?= (string) $event['status'] === 'open' ? 'Close event' : 'Reopen event' ?>">
+                    <?= icon((string) $event['status'] === 'open' ? 'lock' : 'refresh') ?>
+                    <span><?= (string) $event['status'] === 'open' ? 'Close' : 'Reopen' ?></span>
+                  </button>
+                </form>
+                <form method="post" class="inline-form" data-confirm="Issue a new poster QR? Old printed posters will stop working.">
+                  <?= Security::csrfField() ?>
+                  <input type="hidden" name="id" value="<?= $id ?>">
+                  <button class="sm ghost" name="action" value="reissue" type="submit" title="Issue a new poster QR"><?= icon('refresh') ?><span>New QR</span></button>
+                </form>
+                <form method="post" class="inline-form" data-confirm="Delete this event and ALL of its attendance records? This cannot be undone.">
+                  <?= Security::csrfField() ?>
+                  <input type="hidden" name="id" value="<?= $id ?>">
+                  <button class="sm ghost red" name="action" value="delete" type="submit" title="Delete event"><?= icon('trash') ?><span>Delete</span></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  <?php endif; ?>
+</div>
+
+<?php require __DIR__ . '/includes/layout/footer.php'; ?>

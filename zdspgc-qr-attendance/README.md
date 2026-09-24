@@ -48,25 +48,90 @@ php -S localhost:8080
 Then open **http://localhost:8080/install.php** and click *Install database*.
 The installer creates the tables and loads sample students, events and check-ins.
 
-### Option B — XAMPP / WAMP (MySQL, the usual school setup)
+### Option B — XAMPP + MySQL (step by step)
 
-1. Copy the folder into `C:\xampp\htdocs\zdspgc-qr-attendance`.
-2. In phpMyAdmin create a database named `zdspgc_attendance`.
-3. Edit `includes/config.php`:
-   ```php
-   const DB_DRIVER = 'mysql';
-   const DB_USER   = 'root';
-   const DB_PASS   = '';        // your XAMPP MySQL password
-   ```
-4. Open **http://localhost/zdspgc-qr-attendance/install.php** and click *Install database*
-   (or import `sql/mysql-schema.sql` in phpMyAdmin, then run install.php to seed).
-5. **Change `APP_SECRET` in `includes/config.php`** before printing any real student QR ID.
+#### 1. Start XAMPP
 
-To make event poster QR links reachable from phones, set `PUBLIC_BASE_URL` in
-`includes/config.php` to the HTTPS address students will use, for example:
-`https://attendance.example.com/zdspgc-qr-attendance`. Leave it empty to use the
-current request host. Mobile camera access requires HTTPS.
+XAMPP Control Panel → **Start Apache** → **Start MySQL**.
+Note the MySQL port: default `3306`, yours is `3307`.
 
+#### 2. Add the files
+
+Copy the **whole** `zdspgc-qr-attendance` folder into `C:\xampp\htdocs\`.
+To edit the code, open that folder in VS Code — but run it through Apache, not
+VS Code Live Server (PHP needs a server).
+
+#### 3. Create the database
+
+1. Open <http://localhost/phpmyadmin>
+2. **Database** tab → name `zdspgc_attendance` → collation `utf8mb4_general_ci` → **Create**
+
+#### 4. Set the connection
+
+Edit `includes/config.php`:
+
+```php
+const DB_DRIVER = 'mysql';
+const DB_HOST   = '127.0.0.1';
+const DB_PORT   = '3306';    // 3307 if your MySQL runs there
+const DB_NAME   = 'zdspgc_attendance';
+const DB_USER   = 'root';
+const DB_PASS   = '';        // XAMPP default: blank
+```
+
+Also set `APP_SECRET` to your own random string. **Do this before printing QR
+IDs** — changing it later voids every printed code. Leave `PUBLIC_BASE_URL`
+empty for local use.
+
+#### 5. Install
+
+Open <http://localhost/zdspgc-qr-attendance/install.php> → **Install database**.
+This creates the tables and loads sample data.
+
+#### 6. Run
+
+1. Open <http://localhost/zdspgc-qr-attendance/>
+2. Sign in with an account below.
+3. Test a check-in: **Events** → open event → **Scan** → type a student number
+   such as `2024-00308`.
+
+Port 80 busy? Change `Listen 80` to `Listen 8080` in XAMPP → Config → Apache
+(httpd.conf), then use `http://localhost:8080/zdspgc-qr-attendance/`.
+
+#### Run without Apache (VS Code terminal)
+
+```bash
+cd C:\xampp\htdocs\zdspgc-qr-attendance
+C:\xampp\php\php.exe -S localhost:8080
+```
+
+MySQL must still be running. Stop the server with `Ctrl+C`.
+
+#### On phones (self check-in)
+
+Same Wi-Fi. Run `ipconfig`, take the PC's IPv4 (e.g. `192.168.1.20`), then set:
+
+```php
+const PUBLIC_BASE_URL = 'http://192.168.1.20/zdspgc-qr-attendance';
+```
+
+Then **Events** → edit event → **New QR**. Phone cameras need HTTPS; over plain
+HTTP use the PC scan station instead.
+
+#### Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| Blank page / connection refused | Apache not started, or the folder is not inside `htdocs`. |
+| Access denied for user 'root' | Wrong `DB_USER` / `DB_PASS`. |
+| Unknown database | Create it in phpMyAdmin (step 3). |
+| "Database is not installed yet" loop | Wrong `DB_PORT` (3306 vs 3307), or MySQL is off. |
+| Port 80 / 3306 in use | Change the Apache port, or match `DB_PORT` to your MySQL. |
+| Camera will not start | Allow camera permission; needs localhost or HTTPS. |
+| QR rejected | Event closed/ended, or `APP_SECRET` was changed. |
+| Page looks outdated | `Ctrl+F5`. |
+
+---
 
 ### Demo accounts (created by the installer)
 
@@ -78,10 +143,8 @@ current request host. Mobile camera access requires HTTPS.
 | Student Affairs Officer | `officer` | `Officer@2026` |
 | Faculty / Door Marshal | `faculty` | `Faculty@2026` |
 
-Sign in, open **Scan station**, pick *Foundation Day 2026 — Opening Program*
-(already open in the sample data), then try a student QR from **Students →
-QR ID → Print** (print to PDF and scan it with your phone) or simply type a
-student number such as `2024-00308` into the manual box.
+To try a real QR: **Students → QR ID → Print** (print to PDF, scan with a phone),
+or type a student number in the scan station's manual box.
 
 ---
 

@@ -343,7 +343,7 @@ require __DIR__ . '/includes/layout/header.php';
                 <form method="post" class="inline-form">
                   <?= Security::csrfField() ?>
                   <input type="hidden" name="id" value="<?= $id ?>">
-                  <button class="sm ghost" name="action" value="toggle" type="submit" title="<?= (string) $event['status'] === 'open' ? 'Close event' : 'Reopen event' ?>">
+                  <button class="sm ghost act-toggle" name="action" value="toggle" type="submit" title="<?= (string) $event['status'] === 'open' ? 'Close event' : 'Reopen event' ?>">
                     <?= icon((string) $event['status'] === 'open' ? 'lock' : 'refresh') ?>
                     <span><?= (string) $event['status'] === 'open' ? 'Close' : 'Reopen' ?></span>
                   </button>

@@ -34,7 +34,7 @@ if ($search !== '') {
 }
 
 $students = Database::all(
-    'SELECT * FROM students s WHERE ' . implode(' AND ', $where) . ' ORDER BY s.course, s.full_name LIMIT 200',
+    'SELECT * FROM students s WHERE ' . implode(' AND ', $where) . ' ORDER BY s.course ASC, s.full_name ASC',
     $params
 );
 
@@ -75,32 +75,46 @@ require __DIR__ . '/includes/layout/header.php';
       <a class="btn ghost" href="<?= Helpers::e(Helpers::url('qr_cards.php')) ?>">Reset</a>
     </div>
   </form>
-  <p class="hint">Tip: in the print dialog choose <strong>A4 / Letter</strong>, margins <em>Default</em>, and
-    disable headers/footers. Cards are laid out <?= 2 ?> per row and cut along the border.</p>
+  <p class="hint">Tip: in the print dialog choose <strong>A4 / Letter</strong>, margins <em>Default</em>, and under
+    <strong>More settings</strong> turn <strong>Headers and footers</strong> off — otherwise the browser prints the
+    date, URL and page numbers on every sheet. Cards are laid out <?= 2 ?> per row and cut along the border.</p>
 </div>
 
 <?php if ($students === []): ?>
   <p class="empty no-print">No active students match those filters.</p>
-<?php else: ?>
-  <div class="cards-grid mt">
-    <?php foreach ($students as $student): ?>
-      <div class="id-card">
-        <div class="id-qr">
-          <div class="qr" data-qr="<?= Helpers::e(Attendance::studentToken($student)) ?>"
-               data-qr-cell="3" data-qr-name="qr-id-<?= Helpers::e((string) $student['student_no']) ?>"></div>
+<?php else:
+  // One section per course (alphabetical), students alphabetical by name inside it.
+  $byCourse = [];
+  foreach ($students as $student) {
+      $key = (string) $student['course'];
+      $byCourse[$key !== '' ? $key : 'Unassigned'][] = $student;
+  }
+  ksort($byCourse);
+?>
+  <?php foreach ($byCourse as $course => $courseStudents): ?>
+    <div class="course-band">
+      <strong><?= Helpers::e($course) ?></strong>
+      <span><?= count($courseStudents) ?> student(s)</span>
+    </div>
+    <div class="cards-grid">
+      <?php foreach ($courseStudents as $student): ?>
+        <div class="id-card">
+          <div class="id-qr">
+            <div class="qr" data-qr="<?= Helpers::e(Attendance::studentToken($student)) ?>"
+                 data-qr-cell="3" data-qr-name="qr-id-<?= Helpers::e((string) $student['student_no']) ?>"></div>
+          </div>
+          <div>
+            <h4><?= Helpers::e((string) $student['full_name']) ?></h4>
+            <div class="id-no"><?= Helpers::e((string) $student['student_no']) ?></div>
+            <div class="small muted"><?= Helpers::e((string) $student['course']) ?> · <?= Helpers::e((string) $student['year_level']) ?>
+              <?= (string) $student['section'] !== '' ? ' · Sec. ' . Helpers::e((string) $student['section']) : '' ?></div>
+            <div class="small mt"><strong><?= Helpers::e(SCHOOL_CAMPUS) ?></strong><br>
+              <span class="muted"><?= Helpers::e(APP_SHORT) ?></span></div>
+          </div>
         </div>
-        <div>
-          <h4><?= Helpers::e((string) $student['full_name']) ?></h4>
-          <div class="id-no"><?= Helpers::e((string) $student['student_no']) ?></div>
-          <div class="small muted"><?= Helpers::e((string) $student['course']) ?> · <?= Helpers::e((string) $student['year_level']) ?>
-            <?= (string) $student['section'] !== '' ? ' · Sec. ' . Helpers::e((string) $student['section']) : '' ?></div>
-          <div class="small mt"><strong><?= Helpers::e(SCHOOL_CAMPUS) ?></strong><br>
-            <span class="muted"><?= Helpers::e(APP_SHORT) ?></span></div>
-          <div class="id-foot">Present this QR at the event check-in station. Do not share this code.</div>
-        </div>
-      </div>
-    <?php endforeach; ?>
-  </div>
+      <?php endforeach; ?>
+    </div>
+  <?php endforeach; ?>
 <?php endif; ?>
 
 <?php require __DIR__ . '/includes/layout/footer.php'; ?>

@@ -71,7 +71,7 @@ require __DIR__ . '/includes/layout/header.php';
       <div class="table-wrap">
         <table class="tbl responsive">
           <thead>
-            <tr><th>Event</th><th>Window</th><th class="num">In</th><th style="width:170px;">Turnout</th><th>Status</th></tr>
+            <tr><th>Event</th><th>Window</th><th class="num">In</th><th style="width:128px;">Turnout</th><th>Status</th></tr>
           </thead>
           <tbody>
           <?php foreach ($today as $event):

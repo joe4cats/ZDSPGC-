@@ -1,6 +1,7 @@
 <?php
 /**
  * students.php — the student roster: search, add, edit, deactivate, issue QR IDs.
+ * Bulk CSV import with validation and preview.
  *
  * Each student has a signed QR token derived from their student number + a
  * nonce. "New QR" replaces the nonce, which instantly voids an ID that was
@@ -14,6 +15,7 @@ Auth::requireCapability('manage_students');
 
 $COURSES = ['BSIT', 'BSED', 'BEED', 'BSBA', 'BSHM', 'BSA', 'BSCrim'];
 $YEARS   = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+$SECTIONS = ['A', 'B', 'C', 'C1', 'C2', 'C3'];
 
 $editId = Helpers::getInt('edit');
 $form   = [
@@ -27,6 +29,21 @@ $form   = [
     'contact'    => '',
     'status'     => 'active',
 ];
+
+/* ---- CSV Template Download ---- */
+if (Helpers::get('download') === 'template') {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="zdspgc_student_import_template.csv"');
+    header('Cache-Control: no-store');
+    $out = fopen('php://output', 'w');
+    fwrite($out, "\xEF\xBB\xBF"); // BOM for Excel
+    fputcsv($out, ['student_id', 'first_name', 'middle_name', 'last_name', 'course', 'year_level', 'section', 'email']);
+    // Sample rows
+    fputcsv($out, ['2026-001003', 'Juan', 'Santos', 'Dela Cruz', 'BSIT', '1st Year', 'C1', 'juan.delacruz@zdspgc.edu.ph']);
+    fputcsv($out, ['2026-001004', 'Maria', 'Reyes', 'Santos', 'BSIT', '1st Year', 'C1', 'maria.santos@zdspgc.edu.ph']);
+    fclose($out);
+    exit;
+}
 
 if (Helpers::isPost()) {
     Security::requireCsrf();

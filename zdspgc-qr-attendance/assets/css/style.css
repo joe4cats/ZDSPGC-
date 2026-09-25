@@ -717,7 +717,7 @@ body.login-page {
   min-height: 100vh;
   background:
     linear-gradient(180deg, rgba(26, 7, 4, 0.18), rgba(26, 7, 4, 0.42)),
-    url("../img/login-bg.jpg") center center / cover no-repeat fixed;
+    url("../img/login-bg-vicenzo-sagun.png") center center / cover no-repeat fixed;
   background-color: #4c1e17;
 }
 .login-shell {

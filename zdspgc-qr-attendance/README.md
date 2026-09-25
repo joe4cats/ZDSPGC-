@@ -30,13 +30,22 @@ only the interface, and a little JavaScript drives the camera/QR rendering.
 | **On time vs. late** | Decided server-side from `start time + grace minutes`. Nothing the client sends can change it. |
 | **Reports** | Turnout per event, per course, punctuality rate, absentee lists, and the full attendance log with filters (event, course, status, method, date range, free text). |
 | **CSV export** | Attendance log, roster, per-event summary and absentee lists (UTF-8 with BOM, formula-injection safe). |
+| **Bulk student import** | Upload the whole campus roster as a CSV — blank template or roster-export layout. Duplicate student numbers are skipped (or updated on request), problem rows are reported, and every imported student gets a signed QR ID. A 500-row random sample roster is included for demos. |
 | **Staff accounts & roles** | Administrator / Officer / Faculty with capability-based access control, plus an append-only audit log. |
 
 ---
 
 ## 2. Quick start
 
-### Option A — zero setup (SQLite, good for defence/demo)
+### Option A — Windows: one command (XAMPP, MySQL)
+
+Double-click **`run-local.bat`** in the project folder (or run it in a terminal).
+It finds PHP, starts MySQL/MariaDB on the port from `includes/config.php`,
+creates the database and installs the tables the first time, starts the dev
+server on **http://localhost:8080/** and opens your browser. Run `stop.bat` when
+you are done; MySQL keeps running because other tools may share it.
+
+### Option B — zero setup (SQLite, good for defence/demo)
 
 Any PHP 8.1+ with `pdo_sqlite` and `mbstring`:
 
@@ -48,7 +57,7 @@ php -S localhost:8080
 Then open **http://localhost:8080/install.php** and click *Install database*.
 The installer creates the tables and loads sample students, events and check-ins.
 
-### Option B — XAMPP + MySQL (step by step)
+### Option C — XAMPP + MySQL (step by step)
 
 #### 1. Start XAMPP
 
@@ -106,6 +115,9 @@ C:\xampp\php\php.exe -S localhost:8080
 ```
 
 MySQL must still be running. Stop the server with `Ctrl+C`.
+
+On Windows, **`run-local.bat`** does all of this for you — it starts MySQL, sets
+up the database when needed, opens the browser and serves on the same port.
 
 #### On phones (self check-in)
 
@@ -318,6 +330,7 @@ zdspgc-qr-attendance/
 ├── includes/
 │   ├── config.php          ← the only file you normally edit
 │   ├── bootstrap.php       loads config, classes, session, install check
+│   ├── cli-setup.php       CLI database bootstrap used by run-local.bat
 │   ├── Database.php        PDO wrapper (SQLite or MySQL)
 │   ├── Schema.php          runs the schema files + seeds demo data
 │   ├── Security.php        CSRF, signed tokens, rate limiting, audit, CSV guard
@@ -332,8 +345,9 @@ zdspgc-qr-attendance/
 │   ├── css/style.css       All styling + printable QR card styles
 │   ├── img/
 │   │   ├── logo.png          ZDSPGC seal (from seal-source.jpg, background made transparent)
-│   │   ├── login-bg-dimataling.svg  Dimataling-themed login background
-│   │   ├── login-bg.jpg      Reference photo (no longer used by the login page)
+│   │   ├── login-bg-vicenzo-sagun.png  Login background photo used by the login page
+│   │   ├── login-bg-vicenzo-sagun.svg  Vicenzo Sagun landscape (vector, alternate background)
+│   │   ├── login-bg.jpg      Earlier login background (kept as reference)
 │   │   └── seal-source.jpg   Original seal artwork (reference copy)
 │   └── js/
 │       ├── app.js          Confirm dialogs, table filters, copy, print
@@ -346,6 +360,8 @@ zdspgc-qr-attendance/
 │   ├── sqlite-schema.sql   Schema for SQLite (default)
 │   └── mysql-schema.sql    Schema for MySQL/XAMPP (importable in phpMyAdmin)
 ├── storage/               SQLite database + `.htaccess` deny
+├── run-local.bat          One-command launcher: MySQL + database + dev server + browser
+├── stop.bat               Stops the dev server (MySQL keeps running)
 ├── .htaccess              Blocks includes/, storage/ and data files
 └── README.md
 ```
@@ -411,7 +427,7 @@ Be honest about these when you demo or deploy:
 
 ## 12. Roadmap
 
-- CSV bulk import of students and an enrolment table per event.
+- Enrolment table per event (restrict check-in to the invited students).
 - Multi-day / multi-session events (morning and afternoon check-ins).
 - Offline station queue (IndexedDB) that syncs when the connection returns.
 - Optional second factor for self check-in (student PIN or face match).

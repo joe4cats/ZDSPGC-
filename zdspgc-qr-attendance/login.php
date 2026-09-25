@@ -11,6 +11,15 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/bootstrap.php';
 
 if (Auth::check()) {
+    // run-local.bat opens login.php?fresh=1 so every launcher start lands on the
+    // sign-in form instead of the dashboard: sign the old session out first,
+    // then come back on a clean request (new session + new CSRF token).
+    $isLauncherStart = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
+        && (string) ($_GET['fresh'] ?? '') === '1';
+    if ($isLauncherStart) {
+        Auth::logout('Launcher reopened the sign-in page');
+        Helpers::redirect('login.php');
+    }
     Helpers::redirect('index.php');
 }
 

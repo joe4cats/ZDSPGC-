@@ -16,7 +16,7 @@ declare(strict_types=1);
 const APP_NAME    = 'ZDSPGC Event QR Attendance';
 const APP_SHORT   = 'ZDSPGC Event QR Code Attendance System';
 const SCHOOL_NAME = 'Zamboanga del Sur Provincial Government College';
-const SCHOOL_CAMPUS = 'Dimataling, Zamboanga del Sur';
+const SCHOOL_CAMPUS = 'Vicenzo Sagun, Zamboanga del Sur';
 const APP_VERSION = '1.0.0';
 
 /**
